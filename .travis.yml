@@ -7,6 +7,7 @@ python:
 before_install:
 - sudo apt-get update
 - sudo apt-get install jq
+- sudo apt-get install libcouchbase-dev
 install:
 - pip install -e .
 - python setup.py install
