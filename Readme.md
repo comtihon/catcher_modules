@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/comtihon/catcher_modules.svg?branch=master)](https://travis-ci.org/comtihon/catcher_modules)
 [![PyPI](https://img.shields.io/pypi/v/catcher_modules.svg)](https://pypi.python.org/pypi/catcher_modules)
 [![PyPI](https://img.shields.io/pypi/pyversions/catcher_modules.svg)](https://pypi.python.org/pypi/catcher_modules)
-[![PyPI](https://img.shields.io/pypi/wheel/catcher_modules.svg)](https://pypi.python.org/pypi/catcher_modules)
+[![PyPI](https://img.shields.io/pypi/wheel/catcher_modules.svg)](https://pypi.python.org/pypi/catcher_modules)  
 [Catcher](https://github.com/comtihon/catcher) modules repository.
 Catcher support external and internal modules. This repository contains
 internal Catcher modules written in python.
@@ -14,9 +14,9 @@ more about external modules [here](https://github.com/comtihon/catcher/blob/mast
 
 ## Modules
 ### Databases
-* Couchbase
+* Couchbase  
 requirements:
 [libcouchbase](http://developer.couchbase.com/documentation/server/4.5/sdk/c/start-using-sdk.html)
-* Postgres
+* Postgres  
 requirements
 [libpq](http://www.postgresql.org/docs/current/static/libpq.html)
