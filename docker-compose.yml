@@ -1,0 +1,21 @@
+version: '3.1'
+
+services:
+  kafka:
+      image: "spotify/kafka"
+      ports:
+      - "2181:2181"
+      - "9092:9092"
+      environment:
+      - ADVERTISED_HOST=localhost
+      - ADVERTISED_PORT=9092
+  postgres:
+      image: postgres
+      environment:
+        - POSTGRES_PASSWORD=test
+        - POSTGRES_USER=test
+        - POSTGRES_DB=test
+      ports:
+        - "5433:5432"
+      volumes:
+        - ./postgres-data:/var/lib/postgresql/data

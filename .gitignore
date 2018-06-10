@@ -1,0 +1,10 @@
+.idea
+*.iml
+catcher_modules.egg-info
+dist
+build
+*__pycache__*
+.pytest_cache
+/.cache/
+/out/
+postgres-data
