@@ -14,9 +14,9 @@ install:
 - pip install -e .
 - python setup.py install
 script:
-  - sudo docker-compose up -d
-  - sleep 5
-  - make tests
+- sudo docker-compose up -d
+- sleep 5
+- make tests
 deploy:
   on:
     branch: master
@@ -25,4 +25,4 @@ deploy:
   user: valerii.tikhonov
   distributions: bdist_wheel
   password:
-    secure: rV988l6VObxqsiiDWScaze+0ArWXcWG5iTzEoZFW0cxU1UzdHwV8y6+ZGFl814nq2GKvW5LrgIFOej0N7nL9+fYsWPlMhbCfVYJSZr8fcQL4sCdJY8QocAa8JcJ+X7x0WwM+442866iXXgn8ulitAK6622Y8E0BRXcRfSQWw0DsWv14LZ/sj/YUJ88dX8tI14wKFlgeDGKGXEneoVAhmPbUk636xTGIIpRue6domM9qIX317EP+D8ndtFirCnIcxBIX4nacbcaxNNvePZKYSrkrfzIZP1itqZrAFZFacTaUFj4t8GEmd2TVmVA3yJM9kEcs7zC2k6ep4uFL3zyDUkGJ+ADXdvIx/rVS/V94dXm1BwZWL46vjmJrXeFkLUm+ieg6nLfmY9Gjg1wwKzSZMhghYTxtW8F9r7TVJmc5kasBxgj0DrretXegiknKa8RtzW8lMMrWja0k/I9028Oq0BJybTMP/uR73wVMI1WQgGoxoNDqCHEUzfJUKyxKSNz3ZKq59US03ptKPSXJ4RGDsOxU52APVipFlHkjG0gACbznpewu9DBZpR1N+H0sPZskgcN+xeknn7tQrYo2PBbt4sHsS1Twls6UbEzO9uaq+W58zmH9c9FVYItEfwD7TxXBqXNgSxdNKKgj+zfP27vKHDLurXYn29rA5Qak6tCm/XqY=
+    secure: FCvp/RfVJeHgPEtATQuF5jrRkCa9O9nvzP3+MSUziQrQ/cbmIn//QcwV7eD1nlDq/NPG9P2zmFKno/7gLZ8PDJUrug4xsH9dojdmOFHTwOrdWL9+kk2MigSVMp9sQIhoeXHumf6iC7tlCxG3nQMeP3p9dzKdexNJP5XQSNzGciGmuC4jRk9l4TN3qd6yJYhq8JPQKUQNjyuQCloeqiUDDJwxfXr+8W5aIdE5sHut8wrqRQIsBmMMq0y+8jyZTi9T4gqii8zaoZLxTgm+v8v53RxOGjgzBF1kja6xsPmqh26G+10LOMsJp1yt5WeXRkLh6r+pIyO/hBKKnZIsEEar5UkY26FHO1YSWBWZig2v/WDnZ3D+F6KrU0uiU+MHm5oswhDFBBMfyBHZUCwkeK9OA22iFl/YYNcbWTVgKOZMEbXzxaOYT6Caru6Nj38P1tDYkOZ9DfvVKwBAoG1WYaht3qHexZN8r6ZCN3ZhRu2upny1shgcEYKXUsyGEe6MhRMaQkfmzoa7+/X0LhPmDbphfr6nUfGxcrTB0Y7jVOMgN6QGlgv5KA79XAKebdluIQxEOW2ys4WTzFYXXHTYgpCmRBS8Wb29HC1Ttfs53ZQ/a6/X1hND6PMggb050+y+P9kHt1ppSfJ7qVdu4c6Zjp+v5jLP0MsrsD2ZO3MDs25F1hE=
