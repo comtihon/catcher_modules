@@ -2,48 +2,44 @@ import psycopg2
 from catcher.steps.external_step import ExternalStep
 from psycopg2._psycopg import ProgrammingError
 
-DOCUMENTATION = '''
----
-module: postgres
-description: Postgres Catcher module
-options:
-    conf:
-        description:
-            - postgres configuration. Can be a single line string or object.
-        required: true
-        values:
-            dbname: name of the database to connect to
-            user: database user
-            host: database host
-            password: user's password
-            port: database port
-    query:
-        description:
-            - query to run.
-        required: true
-'''
-EXAMPLES = '''
-# select all from test, use object configuration
-postgres:
-    request:
-        conf: 
-            dbname: test
-            user: test
-            password: test
-            host: localhost
-            port: 5433
-        query: 'select count(*) from test'
-    register: {documents: '{{ OUTPUT }}'}
-    
-# insert into test, using string configuration
-postgres:
-    request:
-        conf: 'dbname=test user=test host=localhost password=test port=5433'
-        query: 'insert into test(id, num) values(3, 3);'
-'''
-
 
 class Postgres(ExternalStep):
+    """
+    :Input:
+
+    :conf:  postgres configuration. Can be a single line string or object. **Required**.
+
+    - dbname: name of the database to connect to
+    - user: database user
+    - host: database host
+    - password: user's password
+    - port: database port
+    :query: query to run. **Required**
+
+    :Examples:
+
+    Select all from test, use object configuration
+    ::
+        postgres:
+          request:
+              conf:
+                  dbname: test
+                  user: test
+                  password: test
+                  host: localhost
+                  port: 5433
+              query: 'select count(*) from test'
+          register: {documents: '{{ OUTPUT }}'}
+
+    Insert into test, using string configuration
+    ::
+        postgres:
+          request:
+              conf: 'dbname=test user=test host=localhost password=test port=5433'
+              query: 'insert into test(id, num) values(3, 3);'
+
+      """
+
     def action(self, request: dict) -> any:
         in_data = request['request']
         conf = in_data['conf']

@@ -2,90 +2,72 @@
 from catcher.steps.external_step import ExternalStep
 from couchbase.cluster import Cluster, PasswordAuthenticator
 
-DOCUMENTATION = '''
----
-module: couchbase
-description: Couchbase Catcher module
-options:
-    conf:
-        description:
-            - couchbase configuration. Is an object.
-        required: true
-        values:
-            bucket: bucket to work with
-            user: database user (optional)
-            host: database host (optional)
-            password: user's password
-    put:
-        description:
-            - put value in the database by the key
-        required: false
-        values:
-            key: key
-            value: value. Any object.
-    get:
-        description:
-            - get object by key
-        required: false
-        values:
-            key: key
-    delete:
-        description:
-            - delete object by key
-        required: false
-        values:
-            key: key
-    query:
-        description:
-            - query to run.
-        required: false
-'''
-EXAMPLES = '''
-# put value by key
-couchbase:
-    request:
-        conf: 
-            bucket: test
-            host: localhost
-        put: 
-            key: my_key
-            value: {foo: bar, baz: [1,2,3,4]}
-
-# get value by key
-couchbase:
-    request:
-        conf: 
-            bucket: test
-            user: test
-            password: test
-            host: localhost
-        get: 
-            key: my_key
-
-# delete value by key
-couchbase:
-    request:
-        conf: 
-            bucket: test
-            user: test
-            password: test
-            host: localhost
-        delete: 
-            key: my_key
-            
-# query by foo
-couchbase:
-    request:
-        conf: 
-            bucket: test
-            user: test
-            password: test
-            host: localhost
-        query: "select `baz` from test where `foo` = 'bar'"
-'''
-
 
 class Couchbase(ExternalStep):
+    """
+    :Input:
+
+    :conf:  couchbase configuration. Is an object.. **Required**.
+
+    - bucket: bucket to work with
+    - user: database user (optional)
+    - host: database host (optional)
+    - password: user's password
+    :put: put value in the database by the key.
+    :get: get object by key.
+    :delete: delete object by key.
+    :query: query to run.
+
+    :Examples:
+
+    Put value by key
+    ::
+        couchbase:
+            request:
+                conf:
+                    bucket: test
+                    host: localhost
+                put:
+                    key: my_key
+                    value: {foo: bar, baz: [1,2,3,4]}
+
+    Get value by key
+    ::
+        couchbase:
+            request:
+                conf:
+                    bucket: test
+                    user: test
+                    password: test
+                    host: localhost
+                get:
+                    key: my_key
+
+    Delete value by key
+    ::
+        couchbase:
+            request:
+                conf:
+                    bucket: test
+                    user: test
+                    password: test
+                    host: localhost
+                delete:
+                    key: my_key
+
+    Query by foo
+    ::
+        couchbase:
+            request:
+                conf:
+                    bucket: test
+                    user: test
+                    password: test
+                    host: localhost
+                query: "select `baz` from test where `foo` = 'bar'"
+
+    """
+
     def action(self, request: dict) -> any:
         in_data = request['request']
         conf = in_data['conf']
