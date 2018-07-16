@@ -13,11 +13,11 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 import sys
+from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath('../'))
-
-import re
 
 
 def get_version():
@@ -25,6 +25,15 @@ def get_version():
         return re.search(r"""APPVSN\s+=\s+(['"])(?P<version>.+?)\1""",
                          init_file.read()).group('version')
 
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+
+MOCK_MODULES = ['couchbase', 'psycopg2']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- Project information -----------------------------------------------------
 
