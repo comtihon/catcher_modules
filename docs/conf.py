@@ -32,7 +32,7 @@ class Mock(MagicMock):
         return MagicMock()
 
 
-MOCK_MODULES = ['couchbase', 'psycopg2']
+MOCK_MODULES = ['couchbase', 'psycopg2', 'psycopg2._psycopg', 'couchbase.cluster']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- Project information -----------------------------------------------------
