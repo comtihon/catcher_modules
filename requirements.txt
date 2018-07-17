@@ -4,3 +4,4 @@ pykafka
 psycopg2
 catcher
 couchbase
+redis
