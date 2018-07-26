@@ -55,9 +55,7 @@ class PostgresTest(TestClass):
                 - check:
                     equals: {the: '{{ documents }}', is: 2}
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        join(self.test_dir, 'test_inventory.yml'),
-                        additional_external_modules={'postgres': Postgres})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
 
     def test_str_conf(self):
@@ -75,9 +73,7 @@ class PostgresTest(TestClass):
                     - check:
                         equals: {the: '{{ documents }}', is: 2}
                 ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        join(self.test_dir, 'test_inventory.yml'),
-                        additional_external_modules={'postgres': Postgres})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
 
     def test_write_simple_query(self):
@@ -88,9 +84,7 @@ class PostgresTest(TestClass):
                             conf: 'dbname=test user=test host=localhost password=test port=5433'
                             query: 'insert into test(id, num) values(3, 3);'
                 ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'postgres': Postgres})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         conn = psycopg2.connect(self.conf)
         cur = conn.cursor()
@@ -120,7 +114,5 @@ class PostgresTest(TestClass):
                    - check: 
                         equals: {the: '{{ document[1] }}', is: '{{ num }}'} 
                 ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'postgres': Postgres})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())

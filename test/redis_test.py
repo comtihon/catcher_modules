@@ -2,8 +2,8 @@ from os.path import join
 
 import redis
 from catcher.core.runner import Runner
+from catcher.utils.misc import try_get_object
 
-from catcher_modules.cache.redis import Redis
 from test.abs_test_class import TestClass
 
 
@@ -20,9 +20,7 @@ class RedisTest(TestClass):
                             - foo
                             - 11
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'redis': Redis})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         r = redis.StrictRedis()
         self.assertEqual(b'11', r.get('foo'))
@@ -41,12 +39,10 @@ class RedisTest(TestClass):
                             - key
                             - '{{ complex }}'
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'redis': Redis})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         r = redis.StrictRedis()
-        self.assertEqual(b"{'a': 1, 'b': 'c', 'd': [1, 2, 4]}", r.get('key'))
+        self.assertEqual({'a': 1, 'b': 'c', 'd': [1, 2, 4]}, try_get_object(r.get('key').decode()))
 
     def test_get_number(self):
         r = redis.StrictRedis()
@@ -61,9 +57,7 @@ class RedisTest(TestClass):
                 - check: 
                     equals: {the: '{{ var }}', is: 17} 
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'redis': Redis})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
     def test_set_get(self):
@@ -87,9 +81,7 @@ class RedisTest(TestClass):
                 - check: 
                     equals: {the: '{{ var }}', is: '{{ complex }}'} 
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'redis': Redis})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
     def test_incr_decr_delete(self):
@@ -127,9 +119,7 @@ class RedisTest(TestClass):
                         delete:
                             - foo
             ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'),
-                        None,
-                        additional_external_modules={'redis': Redis})
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         r = redis.StrictRedis()
         self.assertIsNone(r.get('foo'))
