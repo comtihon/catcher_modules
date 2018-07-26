@@ -1,5 +1,5 @@
-#!/usr/bin/python
 from catcher.steps.external_step import ExternalStep
+from catcher.steps.step import update_variables
 from couchbase.cluster import Cluster, PasswordAuthenticator
 
 
@@ -68,8 +68,10 @@ class Couchbase(ExternalStep):
 
     """
 
-    def action(self, request: dict) -> any:
-        in_data = request['request']
+    @update_variables
+    def action(self, includes: dict, variables: dict) -> any:
+        body = self.simple_input(variables)
+        in_data = body['request']
         conf = in_data['conf']
         cluster = Cluster('couchbase://' + conf['host'])
         if 'user' in conf and 'password' in conf:

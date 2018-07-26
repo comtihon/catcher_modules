@@ -1,5 +1,6 @@
 import psycopg2
 from catcher.steps.external_step import ExternalStep
+from catcher.steps.step import update_variables
 from psycopg2._psycopg import ProgrammingError
 
 
@@ -40,8 +41,10 @@ class Postgres(ExternalStep):
 
       """
 
-    def action(self, request: dict) -> any:
-        in_data = request['request']
+    @update_variables
+    def action(self, includes: dict, variables: dict) -> any:
+        body = self.simple_input(variables)
+        in_data = body['equest']
         conf = in_data['conf']
         query = in_data['query']
         if isinstance(conf, str):

@@ -1,5 +1,6 @@
 import redis
 from catcher.steps.external_step import ExternalStep
+from catcher.steps.step import update_variables
 
 
 class Redis(ExternalStep):
@@ -58,8 +59,10 @@ class Redis(ExternalStep):
                             - foo
     """
 
-    def action(self, request: dict) -> any:
-        in_data = request['request']
+    @update_variables
+    def action(self, includes: dict, variables: dict) -> any:
+        body = self.simple_input(variables)
+        in_data = body['request']
         conf = in_data.get('conf', {})
         r = redis.StrictRedis(host=conf.get('host', 'localhost'),
                               port=conf.get('port', 6379),
@@ -69,6 +72,5 @@ class Redis(ExternalStep):
         args = in_data.get(command, [])
         result = getattr(r, command.lower())(*args)
         if isinstance(result, bytes):
-            return result.decode()
-        return result
-
+            return variables, result.decode()
+        return variables, result
