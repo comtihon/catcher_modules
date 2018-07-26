@@ -44,7 +44,7 @@ class Postgres(ExternalStep):
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)
-        in_data = body['equest']
+        in_data = body['request']
         conf = in_data['conf']
         query = in_data['query']
         if isinstance(conf, str):
