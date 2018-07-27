@@ -56,7 +56,7 @@ class Postgres(ExternalStep):
             cur.execute(query)
             response = Postgres.gather_response(cur)
             conn.commit()
-            return response
+            return variables, response
         finally:
             cur.close()
             conn.close()

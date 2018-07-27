@@ -81,7 +81,7 @@ class Couchbase(ExternalStep):
             put = in_data['put']
             result = bucket.upsert(put['key'], put['value'])
             if result.success:
-                return {}
+                return variables, {}
             else:
                 raise RuntimeError(result.errstr)
         if 'get' in in_data:
@@ -89,15 +89,15 @@ class Couchbase(ExternalStep):
             result = bucket.get(get['key'], quiet=True)
             if result is None:
                 raise RuntimeError('no data found for key ' + get['key'])
-            return result.value
+            return variables, result.value
         if 'delete' in in_data:
             delete = in_data['delete']
             bucket.remove(delete['key'], quiet=True)
-            return {}
+            return variables, {}
         if 'query' in in_data:
             query = in_data['query']
             res = [row for row in bucket.n1ql_query(query)]
             if len(res) == 1:
-                return res[0]
-            return res
+                return variables, res[0]
+            return variables, res
         raise RuntimeError('nothing to do: ' + str(in_data))
