@@ -6,7 +6,9 @@ Subpackages
 
 .. toctree::
 
+    catcher_modules.cache
     catcher_modules.database
+    catcher_modules.mq
 
 Module contents
 ---------------
