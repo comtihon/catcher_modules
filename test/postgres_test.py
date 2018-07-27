@@ -3,7 +3,6 @@ from os.path import join
 import psycopg2
 from catcher.core.runner import Runner
 
-from catcher_modules.database.postgres import Postgres
 from test.abs_test_class import TestClass
 
 
