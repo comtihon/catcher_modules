@@ -23,6 +23,11 @@ Usage
 You can either write your own module in python or as external shell script. Both ways are covered
 in Catcher documentation for `external`_ modules.
 
+Read the `docs`_ for existing modules usage info: :meth:`catcher_modules`
+
+.. _docs: https://catcher-modules.readthedocs.io/en/latest/
+
+
 Contribution
 ------------
 If you believe your external python module can be useful for other people you can create a pull request here.

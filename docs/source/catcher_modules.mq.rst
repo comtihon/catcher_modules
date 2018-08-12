@@ -7,16 +7,5 @@ Submodules
 catcher\_modules.mq.kafka module
 --------------------------------
 
-.. automodule:: catcher_modules.mq.kafka
+.. autoclass:: catcher_modules.mq.kafka.Kafka
     :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: catcher_modules.mq
-    :members:
-    :undoc-members:
-    :show-inheritance:

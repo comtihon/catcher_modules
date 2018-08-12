@@ -7,24 +7,11 @@ Submodules
 catcher\_modules.database.couchbase module
 ------------------------------------------
 
-.. automodule:: catcher_modules.database.couchbase
+.. autoclass:: catcher_modules.database.couchbase.Couchbase
     :members:
-    :undoc-members:
-    :show-inheritance:
 
 catcher\_modules.database.postgres module
 -----------------------------------------
 
-.. automodule:: catcher_modules.database.postgres
+.. autoclass:: catcher_modules.database.postgres.Postgres
     :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: catcher_modules.database
-    :members:
-    :undoc-members:
-    :show-inheritance:

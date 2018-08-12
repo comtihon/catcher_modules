@@ -7,16 +7,7 @@ Submodules
 catcher\_modules.cache.redis module
 -----------------------------------
 
-.. automodule:: catcher_modules.cache.redis
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: catcher_modules.cache
+.. autoclass:: catcher_modules.cache.redis.Redis
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,15 +1,12 @@
-.. Catcher-Modules documentation master file, created by
-   sphinx-quickstart on Sun Jul  1 11:57:34 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Catcher-Modules's documentation!
-===========================================
+.. include:: readme.rst
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   source/catcher_modules.cache
+   source/catcher_modules.database
+   source/catcher_modules.mq
 
 
 Indices and tables
