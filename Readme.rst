@@ -10,26 +10,19 @@
 Catcher modules
 ===============
 
-`Catcher`_ modules repository.
-Catcher support external and internal modules. This repository contains
-internal Catcher modules written in python.
-To implement your internal module just extend `ExternalStep` class and
-create a pull request to this repository.
-In case of external modules there is no need to store them in repository.
-They can be implemented in any language/script and stored anywhere. Read
-more about external modules [here](https://github.com/comtihon/catcher/blob/master/doc/modules.md)
+| External `Catcher`_ modules repository.
+| Besides the `built-in`_ Catcher support `external`_ modules: as python or any other executable scripts.
+| See `Catcher`_ documentation on installation catcher with catcher-modules.
 
-.. _catcher: https://github.com/comtihon/catcher
-.. _modules:
+.. _Catcher: https://github.com/comtihon/catcher
+.. _built-in: https://catcher-test-tool.readthedocs.io/en/latest/source/internal_modules.html
+.. _external: https://catcher-test-tool.readthedocs.io/en/latest/source/modules.html#external
 
-## Modules
-### Databases
-* Couchbase  
-requirements: `libcouchbase`_
-* Postgres  
-requirements `postgres`_
+Usage
+-----
+You can either write your own module in python or as external shell script. Both ways are covered
+in Catcher documentation for `external`_ modules.
 
-
-.. _libcouchbase: http://developer.couchbase.com/documentation/server/4.5/sdk/c/start-using-sdk.html
-
-.. _postgres: http://www.postgresql.org/docs/current/static/libpq.html
+Contribution
+------------
+If you believe your external python module can be useful for other people you can create a pull request here.

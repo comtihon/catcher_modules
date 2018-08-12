@@ -56,6 +56,7 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'alabaster',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -104,7 +105,13 @@ html_theme = 'alabaster'
 # documentation.
 #
 # html_theme_options = {}
-
+html_theme_options = {
+    'github_user': 'comtihon',
+    'github_repo': 'catcher_modules',
+    'github_button': True,
+    'badge_branch': 'master',
+    'travis_button': True
+}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -126,6 +133,14 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Catcher-Modulesdoc'
 
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html'
+    ]
+}
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
