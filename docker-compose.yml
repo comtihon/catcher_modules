@@ -9,8 +9,6 @@ services:
         - POSTGRES_DB=test
       ports:
         - "5433:5432"
-      volumes:
-        - ./postgres-data:/var/lib/postgresql/data
 
   redis:
       image: redis
@@ -24,3 +22,11 @@ services:
       environment:
         - ADVERTISED_HOST=localhost
         - ADVERTISED_PORT=9092
+  mongo:
+      image: mongo
+      ports:
+        - "27017:27017"
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: test
+        MONGO_INITDB_ROOT_PASSWORD: test
+

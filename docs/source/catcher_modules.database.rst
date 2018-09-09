@@ -15,3 +15,9 @@ catcher\_modules.database.postgres module
 
 .. autoclass:: catcher_modules.database.postgres.Postgres
     :members:
+
+catcher\_modules.database.mongodb module
+----------------------------------------
+
+.. autoclass:: catcher_modules.database.mongodb.Mongo
+    :members:
