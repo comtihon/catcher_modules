@@ -1,6 +1,7 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
 from pymongo import MongoClient
+from pymongo.cursor import Cursor
 
 
 class Mongo(ExternalStep):
@@ -50,12 +51,12 @@ class Mongo(ExternalStep):
     ::
         mongo:
           request:
-              conf: 'dbname=test user=test host=localhost password=test port=5433'
+              conf: 'mongodb://username:password@host'
               collection: 'your_collection'
               insert_one:
-                'author': 'Mike',
-                'text': 'My first blog post!',
-                'tags': ['mongodb', 'python', 'pymongo'],
+                'author': 'Mike'
+                'text': 'My first blog post!'
+                'tags': ['mongodb', 'python', 'pymongo']
                 'date': '{{ NOW_DT }}'
 
     Find specific document
@@ -80,7 +81,7 @@ class Mongo(ExternalStep):
 
         mongo:
           request:
-              conf: 'dbname=test user=test host=localhost password=test port=5433'
+              conf: '{{ mongo_conf }}'
               collection: 'your_collection'
               insert_many:
                 - {'foo': 'baz'}
@@ -101,7 +102,7 @@ class Mongo(ExternalStep):
               find: {'author': 'Mike'}
               next:
                 sort: 'author'
-                next: count
+                next: 'count'
           register: {document: '{{ OUTPUT }}'}
 
     Will run every next operation on previous one. You can chain more than one operation.
@@ -120,7 +121,7 @@ class Mongo(ExternalStep):
               collection: 'your_collection'
               find:
                 filter: {'author': 'Mike'}
-                projection: {‘_id’: False}}
+                projection: {'_id': False}
               list_params: true  # pass list arguments as separate params
           register: {document: '{{ OUTPUT }}'}
 
@@ -163,10 +164,11 @@ class Mongo(ExternalStep):
         collection = in_data['collection']
         if isinstance(conf, str):  # url
             client = MongoClient(conf)
-            database = client.get_database()
+            database = client.get_database('test')
         else:
+            database = conf.pop('database', 'test')
             client = MongoClient(**conf)
-            database = client.get_database()
+            database = client.get_database(database)
             if database is None and conf['database'] is not None:
                 database = client.get_database(conf['database'])
         action = Action(in_data)
@@ -203,7 +205,26 @@ class Action:
             res = getattr(collection, self.action)()
         if hasattr(self, 'next'):
             return self.next(res)
+        if isinstance(res, Cursor):
+            return drop_ids(list(res))
         try:
-            list(iter(res))  # in case of find
+            if '_id' in res:
+                res.pop('_id')
+                return res
         except TypeError:
-            return res
+            pass
+        if hasattr(res, 'modified_count'):
+            return res.modified_count
+        if hasattr(res, 'deleted_count'):
+            return res.deleted_count
+        if hasattr(res, 'inserted_id'):
+            return res.inserted_id
+        if hasattr(res, 'inserted_ids'):
+            return res.inserted_ids
+        return res
+
+
+def drop_ids(results):
+    for res in results:
+        res.pop('_id')
+    return results
