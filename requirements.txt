@@ -1,8 +1,1 @@
-mock
-pytest
-pykafka
-psycopg2
 catcher
-couchbase
-redis
-pymongo

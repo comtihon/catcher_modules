@@ -8,6 +8,18 @@ def get_requirements() -> list:
         return f.readlines()
 
 
+def extras() -> dict:
+    modules = {
+        'kafka': ["pykafka"],
+        'couchbase': ["couchbase"],
+        'postgres': ["psycopg2"],
+        'redis': ["redis"],
+        'mongodb': ["pymongo"],
+    }
+    modules['all'] = [item for sublist in modules.values() for item in sublist]
+    return modules
+
+
 setup(name=catcher_modules.APPNAME,
       version=catcher_modules.APPVSN,
       description='Additional modules for catcher.',
@@ -25,5 +37,7 @@ setup(name=catcher_modules.APPNAME,
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Topic :: Software Development :: Testing'
-      ]
+      ],
+      extras_require=extras(),
+      tests_require=['mock', 'pytest']
       )
