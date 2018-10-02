@@ -1,7 +1,5 @@
-import psycopg2
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
-from psycopg2._psycopg import ProgrammingError
 
 
 class Postgres(ExternalStep):
@@ -43,6 +41,7 @@ class Postgres(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
+        import psycopg2
         body = self.simple_input(variables)
         in_data = body['request']
         conf = in_data['conf']
@@ -63,6 +62,7 @@ class Postgres(ExternalStep):
 
     @staticmethod
     def gather_response(cursor):
+        from psycopg2._psycopg import ProgrammingError
         try:
             response = cursor.fetchall()
             if len(response) == 1:  # for only one value select * from .. where id = 1 -> [('a', 1, 2)]

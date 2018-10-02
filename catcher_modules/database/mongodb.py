@@ -1,7 +1,5 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
-from pymongo import MongoClient
-from pymongo.cursor import Cursor
 
 
 class Mongo(ExternalStep):
@@ -158,6 +156,7 @@ class Mongo(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
+        from pymongo import MongoClient
         body = self.simple_input(variables)
         in_data = body['request']
         conf = in_data['conf']
@@ -194,6 +193,7 @@ class Action:
             self.list_params = in_data.get('list_params', False)
 
     def __call__(self, collection):
+        from pymongo.cursor import Cursor
         if hasattr(self, 'params'):
             if self.list_params and isinstance(self.params, list):
                 res = getattr(collection, self.action)(*self.params)

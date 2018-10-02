@@ -1,6 +1,5 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
-from couchbase.cluster import Cluster, PasswordAuthenticator
 
 
 class Couchbase(ExternalStep):
@@ -70,6 +69,7 @@ class Couchbase(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
+        from couchbase.cluster import Cluster, PasswordAuthenticator
         body = self.simple_input(variables)
         in_data = body['request']
         conf = in_data['conf']

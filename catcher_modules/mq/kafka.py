@@ -7,8 +7,6 @@ from catcher.utils.file_utils import read_file
 from catcher.utils.logger import debug
 from catcher.utils.misc import try_get_object, fill_template_str
 from catcher.utils.time_utils import to_seconds
-from pykafka import KafkaClient, SimpleConsumer
-from pykafka.common import OffsetType
 
 
 class Kafka(ExternalStep):
@@ -76,6 +74,7 @@ class Kafka(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> tuple:
+        from pykafka import KafkaClient
         client = KafkaClient(hosts=fill_template_str(self.server, variables))
         topic = client.topics[fill_template_str(self.topic, variables).encode('utf-8')]
         out = {}
@@ -90,6 +89,7 @@ class Kafka(ExternalStep):
         return variables, out
 
     def consume(self, topic, variables: dict) -> dict:
+        from pykafka.common import OffsetType
         consumer = topic.get_simple_consumer(consumer_group=self.group_id.encode('utf-8'),
                                              auto_offset_reset=OffsetType.EARLIEST,
                                              reset_offset_on_start=False,
@@ -112,7 +112,7 @@ class Kafka(ExternalStep):
         return fill_template_str(data, variables)
 
     @staticmethod
-    def get_messages(consumer: SimpleConsumer, where: Operator or None, variables, timeout) -> dict or None:
+    def get_messages(consumer, where: Operator or None, variables, timeout) -> dict or None:
         try:
             while True:
                 consumer.fetch()

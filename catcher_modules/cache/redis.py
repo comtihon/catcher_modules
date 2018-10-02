@@ -1,4 +1,3 @@
-import redis
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
 
@@ -61,6 +60,7 @@ class Redis(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
+        import redis
         body = self.simple_input(variables)
         in_data = body['request']
         conf = in_data.get('conf', {})
