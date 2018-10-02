@@ -11,7 +11,7 @@ before_install:
 - sudo apt-get install jq
 - sudo apt-get install libcouchbase-dev
 install:
-- pip install -e .
+- pip install -e "file://`pwd`#egg=catcher-modules[all]"
 - python setup.py install
 script:
 - sudo docker-compose up -d
