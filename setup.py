@@ -12,11 +12,15 @@ def extras() -> dict:
     modules = {
         'kafka': ["pykafka"],
         'couchbase': ["couchbase"],
-        'postgres': ["psycopg2"],
+        'postgres': ["sqlalchemy", "psycopg2"],
+        'mssql': ["cython", "pymssql", "sqlalchemy"],
+        'mysql': ["cython", "pymysql", "sqlalchemy"],
+        'oracle': ["sqlalchemy", "cx_oracle"],
+        'sqlite': ["sqlalchemy"],
         'redis': ["redis"],
         'mongodb': ["pymongo"],
     }
-    modules['all'] = [item for sublist in modules.values() for item in sublist]
+    modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     return modules
 
 
@@ -32,8 +36,6 @@ setup(name=catcher_modules.APPNAME,
       classifiers=[
           'Intended Audience :: Developers',
           'License :: OSI Approved :: Apache Software License',
-          'Programming Language :: Python :: 3.3',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Topic :: Software Development :: Testing'

@@ -31,3 +31,9 @@ Read the `docs`_ for existing modules usage info: :meth:`catcher_modules`
 Contribution
 ------------
 If you believe your external python module can be useful for other people you can create a pull request here.
+
+
+Additional dependencies
+-----------------------
+| `freetds` is required for `mssql`. Read more [here](http://pymssql.org/en/stable/intro.html#install).
+| `libclntsh.dylib` is required for `oracle`. Read more [here](https://oracle.github.io/odpi/doc/installation.html).

@@ -4,11 +4,11 @@ from catcher.steps.step import update_variables
 from catcher_modules.database import SqlAlchemyDb
 
 
-class Postgres(ExternalStep, SqlAlchemyDb):
+class Oracle(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  postgres configuration. Can be a single line string or object. **Required**.
+    :conf:  oracle configuration. Can be a single line string or object. **Required**.
 
     - dbname: name of the database to connect to
     - user: database user
@@ -21,20 +21,20 @@ class Postgres(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use object configuration
     ::
-        postgres:
+        oracle:
           request:
               conf:
                   dbname: test
                   user: user
                   password: password
                   host: localhost
-                  port: 5433
+                  port: 1521
               query: 'select count(*) from test'
           register: {documents: '{{ OUTPUT }}'}
 
     Insert into test, using string configuration
     ::
-        postgres:
+        oracle:
           request:
               conf: 'user:password@localhost:5432/test'
               query: 'insert into test(id, num) values(3, 3);'
@@ -43,11 +43,11 @@ class Postgres(ExternalStep, SqlAlchemyDb):
 
     @property
     def driver(self) -> str:
-        return "postgresql"
+        return "oracle+cx_oracle"
 
     @property
     def default_port(self) -> int:
-        return 5432
+        return 1521
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
