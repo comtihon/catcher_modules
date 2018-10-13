@@ -1,24 +1,27 @@
 from os.path import join
 
-import psycopg2
+import pymysql
 from catcher.core.runner import Runner
 
 from test.abs_test_class import TestClass
 
 
-class PostgresTest(TestClass):
+class MySqlTest(TestClass):
     def __init__(self, method_name):
-        super().__init__('postgres', method_name)
+        super().__init__('mysql', method_name)
 
     @property
     def conf(self):
-        return "dbname=test user=test host=localhost password=test port=5433"
+        return {'host': 'localhost',
+                'user': 'root',
+                'password': 'test',
+                'db': 'test'}
 
     def setUp(self):
         super().setUp()
-        conn = psycopg2.connect(self.conf)
+        conn = pymysql.connect(**self.conf)
         cur = conn.cursor()
-        cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer);")
+        cur.execute("CREATE TABLE test (id INT NOT NULL, num INT, PRIMARY KEY (id));")
         cur.execute("insert into test(id, num) values(1, 1);")
         cur.execute("insert into test(id, num) values(2, 2);")
         conn.commit()
@@ -27,7 +30,7 @@ class PostgresTest(TestClass):
 
     def tearDown(self):
         super().tearDown()
-        conn = psycopg2.connect(self.conf)
+        conn = pymysql.connect(**self.conf)
         cur = conn.cursor()
         cur.execute("DROP TABLE test;")
         conn.commit()
@@ -36,19 +39,19 @@ class PostgresTest(TestClass):
 
     def test_read_simple_query(self):
         self.populate_file('test_inventory.yml', '''
-        postgres:
+        mysql:
             dbname: test
-            user: test
+            user: root
             password: test
             host: localhost
-            port: 5433
+            port: 3306
         ''')
 
         self.populate_file('main.yaml', '''---
             steps:
-                - postgres:
+                - mysql:
                     request:
-                        conf: '{{ postgres }}'
+                        conf: '{{ mysql }}'
                         query: 'select count(*) from test'
                     register: {documents: '{{ OUTPUT }}'}
                 - check:
@@ -59,14 +62,14 @@ class PostgresTest(TestClass):
 
     def test_str_conf(self):
         self.populate_file('test_inventory.yml', '''
-        postgres: 'test:test@localhost:5433/test'
+        mssql: 'root:test@localhost:3306/test'
         ''')
 
         self.populate_file('main.yaml', '''---
                 steps:
-                    - postgres:
+                    - mysql:
                         request:
-                            conf: '{{ postgres }}'
+                            conf: '{{ mssql }}'
                             query: 'select count(*) from test'
                         register: {documents: '{{ OUTPUT }}'}
                     - check:
@@ -78,36 +81,36 @@ class PostgresTest(TestClass):
     def test_write_simple_query(self):
         self.populate_file('main.yaml', '''---
                 steps:
-                    - postgres:
+                    - mysql:
                         request:
-                            conf: 'test:test@localhost:5433/test'
+                            conf: 'root:test@localhost:3306/test'
                             query: 'insert into test(id, num) values(3, 3);'
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
-        conn = psycopg2.connect(self.conf)
+        conn = pymysql.connect(**self.conf)
         cur = conn.cursor()
         cur.execute("select count(*) from test")
         response = cur.fetchall()
         conn.commit()
         cur.close()
         conn.close()
-        self.assertEqual([(3,)], response)
+        self.assertEqual(((3,),), response)
 
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---
                 variables:
-                    pg_conf: 'test:test@localhost:5433/test'
+                    db_conf: 'root:test@localhost:3306/test'
                 steps:
                    - echo: {from: '{{ RANDOM_INT }}', register: {num: '{{ OUTPUT }}'}} 
                    - echo: {from: '{{ RANDOM_INT }}', register: {id: '{{ OUTPUT }}'}} 
-                   - postgres:
+                   - mysql:
                         actions: 
                             - request:
-                                conf: '{{ pg_conf }}'
+                                conf: '{{ db_conf }}'
                                 query: 'insert into test(id, num) values({{ id }}, {{ num }});'
                             - request:
-                                conf: '{{ pg_conf }}'
+                                conf: '{{ db_conf }}'
                                 query: select * from test where id={{ id }}
                               register: {document: '{{ OUTPUT }}'}
                    - check: 
