@@ -15,6 +15,7 @@ class MySqlTest(TestClass):
         return {'host': 'localhost',
                 'user': 'root',
                 'password': 'test',
+                'port': 3307,
                 'db': 'test'}
 
     def setUp(self):
