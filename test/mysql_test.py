@@ -44,7 +44,7 @@ class MySqlTest(TestClass):
             user: root
             password: test
             host: localhost
-            port: 3306
+            port: 3307
         ''')
 
         self.populate_file('main.yaml', '''---
@@ -62,7 +62,7 @@ class MySqlTest(TestClass):
 
     def test_str_conf(self):
         self.populate_file('test_inventory.yml', '''
-        mssql: 'root:test@localhost:3306/test'
+        mssql: 'root:test@localhost:3307/test'
         ''')
 
         self.populate_file('main.yaml', '''---
@@ -83,7 +83,7 @@ class MySqlTest(TestClass):
                 steps:
                     - mysql:
                         request:
-                            conf: 'root:test@localhost:3306/test'
+                            conf: 'root:test@localhost:3307/test'
                             query: 'insert into test(id, num) values(3, 3);'
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
@@ -100,7 +100,7 @@ class MySqlTest(TestClass):
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---
                 variables:
-                    db_conf: 'root:test@localhost:3306/test'
+                    db_conf: 'root:test@localhost:3307/test'
                 steps:
                    - echo: {from: '{{ RANDOM_INT }}', register: {num: '{{ OUTPUT }}'}} 
                    - echo: {from: '{{ RANDOM_INT }}', register: {id: '{{ OUTPUT }}'}} 
