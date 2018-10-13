@@ -52,7 +52,7 @@ class Kafka(ExternalStep):
     """
 
     def __init__(self, group_id='catcher', server='127.0.0.1:9092', **body: dict) -> None:
-        super().__init__(body)
+        super().__init__(**body)
         method = Step.filter_predefined_keys(body)  # produce/consume
         self.method = method.lower()
         conf = body[method]
