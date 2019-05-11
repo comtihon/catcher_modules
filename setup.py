@@ -19,6 +19,7 @@ def extras() -> dict:
         'sqlite': ["sqlalchemy"],
         'redis': ["redis"],
         'mongodb': ["pymongo"],
+        'docker': ["docker"],
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     return modules

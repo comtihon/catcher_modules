@@ -7,6 +7,7 @@
    source/catcher_modules.cache
    source/catcher_modules.database
    source/catcher_modules.mq
+   source/catcher_modules.service
 
 
 Indices and tables
