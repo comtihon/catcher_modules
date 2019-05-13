@@ -10,16 +10,16 @@ def get_requirements() -> list:
 
 def extras() -> dict:
     modules = {
-        'kafka': ["pykafka"],
-        'couchbase': ["couchbase"],
-        'postgres': ["sqlalchemy", "psycopg2"],
-        'mssql': ["cython", "pymssql", "sqlalchemy"],
-        'mysql': ["cython", "pymysql", "sqlalchemy"],
-        'oracle': ["sqlalchemy", "cx_oracle"],
-        'sqlite': ["sqlalchemy"],
-        'redis': ["redis"],
-        'mongodb': ["pymongo"],
-        'docker': ["docker"],
+        'kafka': ["pykafka==2.8.*"],
+        'couchbase': ["couchbase==2.5.*"],
+        'postgres': ["sqlalchemy==1.3.*", "psycopg2==2.8.*"],
+        'mssql': ["cython==0.29.*", "pymssql==2.1.*", "sqlalchemy==1.3.*"],
+        'mysql': ["cython==0.29.*", "pymysql==0.9.*", "sqlalchemy==1.3.*"],
+        'oracle': ["sqlalchemy==1.3.*", "cx_oracle==7.1.*"],
+        'sqlite': ["sqlalchemy==1.3.*"],
+        'redis': ["redis==3.2.*"],
+        'mongodb': ["pymongo==3.8.*"],
+        'docker': ["docker==3.7.*"],
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     return modules

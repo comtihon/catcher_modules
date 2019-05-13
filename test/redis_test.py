@@ -17,8 +17,7 @@ class RedisTest(TestClass):
                 - redis:
                     request:
                         set:
-                            - foo
-                            - 11
+                            foo: 11
             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
@@ -36,8 +35,7 @@ class RedisTest(TestClass):
                 - redis:
                     request:
                         set:
-                            - key
-                            - '{{ complex }}'
+                            key: '{{ complex }}'
             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
@@ -51,8 +49,7 @@ class RedisTest(TestClass):
             steps:
                 - redis:
                     request:
-                        get:
-                            - key
+                        get: key
                     register: {var: '{{ OUTPUT }}'}
                 - check: 
                     equals: {the: '{{ var }}', is: 17} 
@@ -71,12 +68,10 @@ class RedisTest(TestClass):
                 - redis:
                     request:
                         set:
-                            - key
-                            - '{{ complex }}'
+                            key: '{{ complex }}'
                 - redis:
                     request:
-                        get:
-                            - key
+                        get: 'key'
                     register: {var: '{{ OUTPUT }}'}
                 - check: 
                     equals: {the: '{{ var }}', is: '{{ complex }}'} 
@@ -91,14 +86,11 @@ class RedisTest(TestClass):
                     actions:
                         - request:
                                 set:
-                                    - foo
-                                    - 11
+                                    foo: 11
                         - request:
-                                decr:
-                                    - foo
+                                decr: 'foo'
                         - request:
-                                get:
-                                    - foo
+                                get: 'foo'
                           register: {var: '{{ OUTPUT }}'}
                 - check: 
                     equals: {the: '{{ var }}', is: 10}
@@ -106,8 +98,7 @@ class RedisTest(TestClass):
                     actions:
                         - request:
                                 incrby:
-                                    - foo
-                                    - 5
+                                    foo: 5
                         - request:
                                 get:
                                     - foo
@@ -116,8 +107,7 @@ class RedisTest(TestClass):
                     equals: {the: '{{ var }}', is: 15}
                 - redis:
                     request:
-                        delete:
-                            - foo
+                        delete: foo
             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())

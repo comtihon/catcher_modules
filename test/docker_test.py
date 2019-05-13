@@ -105,8 +105,6 @@ class DockerTest(TestClass):
                                         - docker: 
                                             start: 
                                                 image: 'postgres:alpine'
-                                                ports:
-                                                    '5432/tcp': 5432
                                                 environment:
                                                     POSTGRES_PASSWORD: test
                                                     POSTGRES_USER: user

@@ -27,15 +27,13 @@ class Redis(ExternalStep):
         redis:
             request:
                 set:
-                    - 'key'
-                    - '{{ complex }}'
+                    key: '{{ complex }}'
 
     Get value by key 'key' and register in variable 'var'
     ::
         redis:
             request:
-                get:
-                    - key
+                get: 'key'
             register: {var: '{{ OUTPUT }}'}
 
     Decrement, increment by 5 and delete
@@ -44,15 +42,12 @@ class Redis(ExternalStep):
             actions:
                 - request:
                         set:
-                            - foo
-                            - 11
+                            'foo': 11
                 - request:
-                        decr:
-                            - foo
+                        decr: foo
                 - request:
                         incrby:
-                            - foo
-                            - 5
+                            foo: 5
                 - request:
                         delete:
                             - foo
@@ -69,8 +64,14 @@ class Redis(ExternalStep):
                               db=conf.get('db', 0),
                               max_connections=1)
         [command] = [k for k in in_data.keys() if k != 'conf']
-        args = in_data.get(command, [])
-        result = getattr(r, command.lower())(*args)
+        value = in_data.get(command, [])
+        if isinstance(value, dict):  # set: {key: value}
+            flatlist = [str(item) for k in value for item in (k, value[k])]  # convert to str to avoid data errors
+            result = getattr(r, command.lower())(*flatlist)
+        elif isinstance(value, str):  # get: key
+            result = getattr(r, command.lower())(value)
+        else:  # ???
+            result = getattr(r, command.lower())(*value)
         if isinstance(result, bytes):
             return variables, result.decode()
         return variables, result
