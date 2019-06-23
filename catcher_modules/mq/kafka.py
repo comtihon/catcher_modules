@@ -51,13 +51,13 @@ class Kafka(ExternalStep):
 
     """
 
-    def __init__(self, group_id='catcher', server='127.0.0.1:9092', **kwargs: dict) -> None:
+    def __init__(self, **kwargs: dict) -> None:
         super().__init__(**kwargs)
         method = Step.filter_predefined_keys(kwargs)  # produce/consume
         self.method = method.lower()
         conf = kwargs[method]
-        self.group_id = group_id
-        self.server = server
+        self.group_id = conf.get('group_id', 'catcher')
+        self.server = conf.get('server', '127.0.0.1:9092')
         self.topic = conf['topic']
         timeout = conf.get('timeout', {'seconds': 1})
         self.timeout = to_seconds(timeout)

@@ -1,3 +1,9 @@
+# 3.1.0
+## New
+* add ElasticSearch step
+## Fix
+* fix kafka server url and group_id
+
 # 3.0.0
 ## Incompatible changes:
 * `Redis`: Syntax change. Use command:value instead of list.
