@@ -14,14 +14,14 @@ class ElasticTest(TestClass):
 
     def setUp(self):
         super().setUp()
-        request('PUT', f'http://localhost:9200/test')
+        request('PUT', 'http://localhost:9200/test')
 
     def tearDown(self):
         super().tearDown()
-        request('DELETE', f'http://localhost:9200/test')
+        request('DELETE', 'http://localhost:9200/test')
 
     def test_search_simple(self):
-        res = self.es.create('test', id=1, body={'name': f'test_document_1', 'payload': 'one two three'})
+        res = self.es.create('test', id=1, body={'name': 'test_document_1', 'payload': 'one two three'})
         assert res['result'] == 'created'
         self.es.indices.refresh(index="test")
         self.populate_file('main.yaml', '''---
@@ -39,11 +39,11 @@ class ElasticTest(TestClass):
         self.assertTrue(runner.run_tests())
 
     def test_search_advanced(self):
-        res = self.es.create('test', id=1, body={'name': f'test_document_1', 'payload': 'one two three'})
+        res = self.es.create('test', id=1, body={'name': 'test_document_1', 'payload': 'one two three'})
         assert res['result'] == 'created'
-        res = self.es.create('test', id=2, body={'name': f'test_document_2', 'payload': 'three four five'})
+        res = self.es.create('test', id=2, body={'name': 'test_document_2', 'payload': 'three four five'})
         assert res['result'] == 'created'
-        res = self.es.create('test', id=3, body={'name': f'test_document_3', 'payload': 'five six seven'})
+        res = self.es.create('test', id=3, body={'name': 'test_document_3', 'payload': 'five six seven'})
         assert res['result'] == 'created'
 
         self.es.indices.refresh(index="test")
@@ -64,11 +64,11 @@ class ElasticTest(TestClass):
         self.assertTrue(runner.run_tests())
 
     def test_bool_filter(self):
-        res = self.es.create('test', id=1, body={'shape': f'round', 'color': 'red'})
+        res = self.es.create('test', id=1, body={'shape': 'round', 'color': 'red'})
         assert res['result'] == 'created'
-        res = self.es.create('test', id=2, body={'shape': f'square', 'color': 'red'})
+        res = self.es.create('test', id=2, body={'shape': 'square', 'color': 'red'})
         assert res['result'] == 'created'
-        res = self.es.create('test', id=3, body={'shape': f'round', 'color': 'white'})
+        res = self.es.create('test', id=3, body={'shape': 'round', 'color': 'white'})
         assert res['result'] == 'created'
 
         self.es.indices.refresh(index="test")
