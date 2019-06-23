@@ -91,6 +91,4 @@ class Elastic(ExternalStep):
         return [hit['_source'] for hit in res['hits']['hits']]
 
     def _refresh(self, es, index):
-        res = es.indices.refresh(index)
-        print(res)
-        return []
+        return es.indices.refresh(index)
