@@ -20,6 +20,7 @@ def extras() -> dict:
         'redis': ["redis==3.2.*"],
         'mongodb': ["pymongo==3.8.*"],
         'docker': ["docker==3.7.*"],
+        'elastic': ["elasticsearch==7.0.*"],
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     return modules
@@ -42,5 +43,5 @@ setup(name=catcher_modules.APPNAME,
           'Topic :: Software Development :: Testing'
       ],
       extras_require=extras(),
-      tests_require=['mock', 'pytest']
+      tests_require=['mock', 'pytest', 'requests']
       )
