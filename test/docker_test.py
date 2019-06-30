@@ -136,7 +136,7 @@ class DockerTest(TestClass):
                             steps:
                                 - docker: 
                                     start: 
-                                        image: 'ubuntu'
+                                        image: 'alpine'
                                         cmd: 'ls /data/'
                                         detached: false
                                         volumes:
