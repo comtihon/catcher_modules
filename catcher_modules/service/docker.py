@@ -65,17 +65,20 @@ class StartCmd(DockerCmd):
         self._detached = kwargs.get('detached', True)
         self._ports = kwargs.get('ports')
         self._env = kwargs.get('environment', None)
+        self._volumes = kwargs.get('volumes', {})
 
     def action(self, network):
         import docker
         client = docker.from_env()
+        volumes = dict([(k, {'bind': v, 'mode': 'rw'}) for k, v in self._volumes.items()])
         output = client.containers.run(self._image,
                                        self._cmd,
                                        name=self._name,
                                        detach=self._detached,
                                        network=network,
                                        ports=self._ports,
-                                       environment=self._env)
+                                       environment=self._env,
+                                       volumes=volumes)
         if not self._detached:
             return output.decode()
         else:
@@ -134,6 +137,7 @@ class Docker(ExternalStep):
     - detached: should it be run detached? *Optional* (default is True)
     - ports: dictionary of ports to bind. Keys - container ports, values - host ports.
     - environment: a dictionary of environment variables
+    - volumes: a dictionary of volumes
 
     :stop: stop a container.
 
@@ -182,6 +186,67 @@ class Docker(ExternalStep):
                 register: {echo: '{{ OUTPUT.strip() }}'}
             - check:
                 equals: {the: '{{ echo }}', is: 'hello world'}
+
+    Start named container detached with volumes and environment.
+    ::
+        - docker:
+            start:
+                image: 'my-backend-service'
+                name: 'mock server'
+                ports:
+                    '1080/tcp': 8000
+                environment:
+                    POOL_SIZE: 20
+                    OTHER_URL: {{ service1.url }}
+                volumes:
+                    '{{ CURRENT_DIR }}/data': '/data'
+                    '/tmp/logs': '/var/log/service'
+
+    Exec command on running container.
+    ::
+        - docker:
+            start:
+                image: 'postgres:alpine'
+                environment:
+                    POSTGRES_PASSWORD: test
+                    POSTGRES_USER: user
+                    POSTGRES_DB: test
+            register: {hash: '{{ OUTPUT }}'}
+        ...
+        - docker:
+            exec:
+                hash: '{{ hash }}'
+                cmd: >
+                    psql -U user -d test -c \
+                    "CREATE TABLE test(rno integer, name character varying)"
+            register: {create_result: '{{ OUTPUT.strip() }}'}
+
+    Get container's logs.
+    ::
+        - docker:
+            start:
+                image: 'alpine'
+                cmd: 'echo hello world'
+            register: {id: '{{ OUTPUT }}'}
+        - docker:
+            logs:
+                hash: '{{ id }}'
+            register: {out: '{{ OUTPUT.strip() }}'}
+        - check:
+            equals: {the: '{{ out }}', is: 'hello world'}
+
+    Disconnect a container from a network.
+    ::
+        - docker:
+            disconnect:
+                hash: '{{ hash }}'
+        - http:
+            get:
+                url: 'http://localhost:8000/some/path'
+                should_fail: true
+        - docker:
+            connect:
+                hash: '{{ hash }}'
 
     """
 

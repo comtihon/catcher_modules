@@ -1,3 +1,4 @@
+import os
 from os.path import join
 
 from test.abs_test_class import TestClass
@@ -124,6 +125,27 @@ class DockerTest(TestClass):
                                             stop:
                                                 hash: '{{ hash }}'            
                                     ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_volumes(self):
+        os.makedirs(join(self.test_dir, 'data'))
+        with open(join(self.test_dir, 'data', 'my_file'), 'w') as f:
+            f.write("hello world")
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - docker: 
+                                    start: 
+                                        image: 'alpine'
+                                        cmd: 'ls /data/'
+                                        detached: false
+                                        volumes:
+                                            '{{ CURRENT_DIR }}/data': '/data'
+                                    register: {output: '{{ OUTPUT.strip() }}'}
+                                - echo: '{{ output }}'
+                                - check:
+                                    equals: {the: '{{ output }}', is: 'my_file'}
+                            ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
