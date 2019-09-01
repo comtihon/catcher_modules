@@ -61,3 +61,16 @@ services:
         http.max_content_length: "5mb"
       ports:
           - "9200:9200"
+  minio:
+    image: minio/minio
+    volumes:
+      - data:/data
+    ports:
+      - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
+
+volumes:
+  data:

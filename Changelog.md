@@ -1,3 +1,7 @@
+# 3.2.0
+## New
+* S3 step
+
 # 3.1.0
 ## New
 * add ElasticSearch step
