@@ -89,17 +89,8 @@ class SQLiteTest(TestClass):
         self.assertTrue(runner.run_tests())
 
     def test_populate(self):
-        self.populate_file('resources/schema.sql', '''
-                        CREATE TABLE foo(
-                            user_id      integer    primary key,
-                            email        varchar(36)    NOT NULL
-                        );
-                        ''')
-
-        self.populate_file('resources/foo.csv', "user_id,email\n"
-                                                "1,test1@test.com\n"
-                                                "2,test2@test.com\n"
-                           )
+        self.populate_schema_file()
+        self.populate_data_file()
 
         self.populate_file('main.yaml', '''---
                             steps:
@@ -119,4 +110,51 @@ class SQLiteTest(TestClass):
         self.assertEqual('test1@test.com', response[0][1])
         self.assertEqual(2, response[1][0])
         self.assertEqual('test2@test.com', response[1][1])
+
+    def test_expect_strict(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        db_file = join(self.test_dir, "test.db")
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                sqlite:
+                                                    conf: '/{}'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                sqlite:
+                                                    conf: '/{}'
+                                                    data:
+                                                        foo: foo.csv
+                                                    strict: true
+                                    '''.format(db_file, db_file))
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_expect(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        db_file = join(self.test_dir, "test.db")
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                sqlite:
+                                                    conf: '/{}'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                sqlite:
+                                                    conf: '/{}'
+                                                    data:
+                                                        foo: foo.csv
+                                    '''.format(db_file, db_file))
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
 

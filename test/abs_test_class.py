@@ -46,3 +46,17 @@ class TestClass(unittest.TestCase):
             conn.commit()
             cur.close()
             return response
+
+    def populate_schema_file(self):
+        self.populate_file('resources/schema.sql', '''
+        CREATE TABLE foo(
+            user_id      integer    primary key,
+            email        varchar(36)    NOT NULL
+        );
+        ''')
+
+    def populate_data_file(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                                                "2,test2@test.com\n"
+                           )

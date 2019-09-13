@@ -147,3 +147,48 @@ class MSSqlTest(TestClass):
         self.assertEqual('test1@test.com', response[0][1])
         self.assertEqual(2, response[1][0])
         self.assertEqual('test2@test.com', response[1][1])
+
+    def test_expect_strict(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                mssql:
+                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                mssql:
+                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                                    data:
+                                                        foo: foo.csv
+                                                    strict: true
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_expect(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                mssql:
+                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                mssql:
+                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                                    data:
+                                                        foo: foo.csv
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())

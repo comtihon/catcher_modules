@@ -1,9 +1,16 @@
+import csv
 import json
 from abc import abstractmethod
-import csv
+from itertools import zip_longest
+from typing import List
+
 from catcher.utils.logger import debug
 
 from utils import generator_utils
+
+
+class EmptyRow:
+    pass
 
 
 class SqlAlchemyDb:
@@ -181,11 +188,15 @@ class SqlAlchemyDb:
         row_table = self.__automap_table(table_name, engine)
         from sqlalchemy.orm import Session
         session = Session(engine)
+        has_error = False
         try:
             for row in iter_csv:
                 found = session.query(row_table).filter_by(**dict(zip(keys, row))).first()
                 if found is None:
-                    raise Exception('No ' + str(row) + ' found')
+                    debug('No ' + str(row) + ' found')
+                    has_error = True
+            if has_error:
+                raise Exception('Data check failed')
         finally:
             session.close()
 
@@ -196,12 +207,17 @@ class SqlAlchemyDb:
         csv_generator = generator_utils.csv_to_generator(path_to_csv)
         keys = next(iter(csv_generator))
         db_generator = generator_utils.table_to_generator(table, engine)
-        all(self.compare_result_set(dict(zip(keys, a)), b) for a, b in zip(csv_generator, db_generator))
+        sentinel = EmptyRow()
+        res = all(self.compare_result_set(keys, a, b)
+                  for a, b in zip_longest(csv_generator, db_generator, fillvalue=sentinel))
+        if not res:
+            raise Exception('Data check failed')
 
     def __execute(self, conf: str, query: str):
         from sqlalchemy import create_engine
         engine = create_engine(self.__form_conf(conf))
-        connection = engine.connect()
+        # TODO use with
+        connection = engine.connect()  # TODO pool pre-ping
         try:
             result = connection.execute(query)
             return SqlAlchemyDb.gather_response(result)
@@ -233,5 +249,22 @@ class SqlAlchemyDb:
             return None
 
     @staticmethod
-    def compare_result_set(expected, db_row):
-        return db_row == expected
+    def compare_result_set(keys: List[str], values: List[str], db_row):
+        if isinstance(values, EmptyRow):
+            debug('Got more data than expected: ' +
+                  str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+            return False
+        expected = dict(zip(keys, values))
+        if isinstance(db_row, EmptyRow):
+            debug('Missing data: ' + str(expected))
+            return False
+        for key, value in expected.items():
+            if not hasattr(db_row, key):
+                debug('No ' + str(key) + ' found in ' +
+                      str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+                return False
+            if str(getattr(db_row, key)) != value:
+                debug('Value mismatch for ' + str(key) + ': got '
+                      + str(getattr(db_row, key)) + ', expect: ' + str(value))
+                return False
+        return True

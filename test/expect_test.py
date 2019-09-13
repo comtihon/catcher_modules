@@ -36,8 +36,8 @@ class ExpectTest(TestClass):
                 value         varchar(36)    NOT NULL
             );
 
-            insert into foo values(1, 'test1@test.com'),(2, 'test2@test.com');
-            insert into bar values('k1','v1'),('k2', 'v2');
+            insert into foo values(1, 'test1@test.com'),(2, 'test2@test.com') ON CONFLICT DO NOTHING;
+            insert into bar values('k1','v1'),('k2', 'v2') ON CONFLICT DO NOTHING;
             ''')
             conn.commit()
             cur.close()
@@ -55,17 +55,17 @@ class ExpectTest(TestClass):
         self.populate_file('resources/check_schema.json', '''
                 {
                     "foo": {
-                        "columns": {
-                            "user_id": "integer",
-                            "email": "varchar(36)"
-                        },
+                        "columns": [
+                            {"user_id": "integer"},
+                            {"email": "varchar(36)}"
+                        ],
                         "keys": ["user_id"]
                     },
                     "bar": {
-                        "columns": {
-                            "key": "varchar(36)",
-                            "value": "varchar(36)"
-                        },
+                        "columns": [
+                            {"key": "varchar(36)"},
+                            {"value": "varchar(36)"}
+                        ],
                         "keys": ["key"]
                     }
                 }''')  # TODO add index on value and check it.
@@ -135,5 +135,59 @@ class ExpectTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
-    def test_expect_strict_false_positive(self):
-        pass
+    def test_expect_strict_false_positive_mismatch(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                                                "2,WRONG_DATA\n"
+                           )
+
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - expect:
+                                    compare:
+                                        postgres:
+                                            conf: 'test:test@localhost:5433/test'
+                                            data:
+                                                foo: foo.csv
+                                            strict: true
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
+
+    def test_expect_strict_false_positive_less_expected(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                           )
+
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - expect:
+                                    compare:
+                                        postgres:
+                                            conf: 'test:test@localhost:5433/test'
+                                            data:
+                                                foo: foo.csv
+                                            strict: true
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
+
+    def test_expect_strict_false_positive_more_expected(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                                                "2,test2@test.com\n"
+                                                "3,test2@test.com\n"
+                           )
+
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - expect:
+                                    compare:
+                                        postgres:
+                                            conf: 'test:test@localhost:5433/test'
+                                            data:
+                                                foo: foo.csv
+                                            strict: true
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
