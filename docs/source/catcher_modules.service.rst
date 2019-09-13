@@ -15,3 +15,9 @@ catcher\_modules.service.elastic module
 
 .. autoclass:: catcher_modules.service.elastic.Elastic
     :members:
+
+catcher\_modules.service.s3 module
+---------------------------------------
+
+.. autoclass:: catcher_modules.service.s3.S3
+    :members:
