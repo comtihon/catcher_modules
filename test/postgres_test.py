@@ -14,25 +14,27 @@ class PostgresTest(TestClass):
     def conf(self):
         return "dbname=test user=test host=localhost password=test port=5433"
 
+    @property
+    def connection(self):
+        return psycopg2.connect(self.conf)
+
     def setUp(self):
         super().setUp()
-        conn = psycopg2.connect(self.conf)
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer);")
-        cur.execute("insert into test(id, num) values(1, 1);")
-        cur.execute("insert into test(id, num) values(2, 2);")
-        conn.commit()
-        cur.close()
-        conn.close()
+        with self.connection as conn:
+            cur = conn.cursor()
+            cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer);")
+            cur.execute("insert into test(id, num) values(1, 1);")
+            cur.execute("insert into test(id, num) values(2, 2);")
+            conn.commit()
+            cur.close()
 
     def tearDown(self):
         super().tearDown()
-        conn = psycopg2.connect(self.conf)
-        cur = conn.cursor()
-        cur.execute("DROP TABLE test;")
-        conn.commit()
-        cur.close()
-        conn.close()
+        with self.connection as conn:
+            cur = conn.cursor()
+            cur.execute("DROP TABLE test;")
+            conn.commit()
+            cur.close()
 
     def test_read_simple_query(self):
         self.populate_file('test_inventory.yml', '''
@@ -85,14 +87,8 @@ class PostgresTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
-        conn = psycopg2.connect(self.conf)
-        cur = conn.cursor()
-        cur.execute("select count(*) from test")
-        response = cur.fetchall()
-        conn.commit()
-        cur.close()
-        conn.close()
-        self.assertEqual([(3,)], response)
+        response = self.get_values('test')
+        self.assertEqual([(1, 1), (2, 2), (3, 3)], response)
 
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---

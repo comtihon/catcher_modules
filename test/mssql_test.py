@@ -1,8 +1,9 @@
 from os.path import join
 
 import pymssql
+import test
 from catcher.core.runner import Runner
-
+from catcher.utils.file_utils import ensure_empty
 from test.abs_test_class import TestClass
 
 
@@ -14,25 +15,30 @@ class MSSqlTest(TestClass):
     def conf(self):
         return 'localhost', 'sa', 'Test1234', 'tempdb'
 
+    @property
+    def connection(self):
+        return pymssql.connect(*self.conf)
+
     def setUp(self):
         super().setUp()
-        conn = pymssql.connect(*self.conf)
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE test (id INT NOT NULL, num INT, PRIMARY KEY (id));")
-        cur.execute("insert into test(id, num) values(1, 1);")
-        cur.execute("insert into test(id, num) values(2, 2);")
-        conn.commit()
-        cur.close()
-        conn.close()
+        with self.connection as conn:
+            cur = conn.cursor()
+            cur.execute("CREATE TABLE test (id INT NOT NULL, num INT, PRIMARY KEY (id));")
+            cur.execute("insert into test(id, num) values(1, 1);")
+            cur.execute("insert into test(id, num) values(2, 2);")
+            conn.commit()
+            cur.close()
+        ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
 
     def tearDown(self):
         super().tearDown()
-        conn = pymssql.connect(*self.conf)
-        cur = conn.cursor()
-        cur.execute("DROP TABLE test;")
-        conn.commit()
-        cur.close()
-        conn.close()
+        with self.connection as conn:
+            cur = conn.cursor()
+            cur.execute("DROP TABLE test;")
+            cur.execute("DROP TABLE if exists foo;")
+            cur.execute("DROP TABLE if exists bar;")
+            conn.commit()
+            cur.close()
 
     def test_read_simple_query(self):
         self.populate_file('test_inventory.yml', '''
@@ -85,14 +91,8 @@ class MSSqlTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
-        conn = pymssql.connect(*self.conf)
-        cur = conn.cursor()
-        cur.execute("select count(*) from test")
-        response = cur.fetchall()
-        conn.commit()
-        cur.close()
-        conn.close()
-        self.assertEqual([(3,)], response)
+        response = self.get_values('test')
+        self.assertEqual([(1, 1), (2, 2), (3, 3)], response)
 
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---
@@ -115,3 +115,35 @@ class MSSqlTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_populate_int(self):
+        self.populate_file('resources/schema.sql', '''
+                CREATE TABLE foo(
+                    user_id      integer    primary key,
+                    email        varchar(36)    NOT NULL
+                );
+                ''')
+
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                                                "2,test2@test.com\n"
+                           )
+
+        self.populate_file('main.yaml', '''---
+                    steps:
+                        - prepare:
+                            populate:
+                                mssql:
+                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                    schema: schema.sql
+                                    data:
+                                        foo: foo.csv
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual(2, len(response))
+        self.assertEqual(1, response[0][0])
+        self.assertEqual('test1@test.com', response[0][1])
+        self.assertEqual(2, response[1][0])
+        self.assertEqual('test2@test.com', response[1][1])

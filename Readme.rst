@@ -6,6 +6,8 @@
     :target: https://pypi.python.org/pypi/catcher_modules
 .. image:: https://img.shields.io/pypi/wheel/catcher_modules.svg
     :target: https://pypi.python.org/pypi/catcher_modules
+.. image:: https://patrolavia.github.io/telegram-badge/chat.png
+    :target: https://t.me/catcher_e2e
 
 Catcher modules
 ===============
@@ -31,6 +33,7 @@ Read the `docs`_ for existing modules usage info: :meth:`catcher_modules`
 Contribution
 ------------
 If you believe your external python module can be useful for other people you can create a pull request here.
+You can find quick support in the telegram channel.
 
 
 Additional dependencies
