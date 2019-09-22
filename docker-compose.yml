@@ -72,5 +72,18 @@ services:
       MINIO_SECRET_KEY: minio123
     command: server /data
 
+  rabbit:
+    image: rabbitmq:3.7.18-management
+    hostname: catcher-rabbit
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@app-rabbitmq:cached
+    environment:
+        RABBITMQ_DEFAULT_USER: catcher
+        RABBITMQ_DEFAULT_PASS: catcher
+        RABBITMQ_DEFAULT_VHOST: /
+
 volumes:
   data:
