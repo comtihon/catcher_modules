@@ -1,4 +1,5 @@
 import json
+import logging
 from os.path import join
 
 import pika
@@ -6,12 +7,14 @@ import pika
 from catcher.core.runner import Runner
 from test.abs_test_class import TestClass
 
+logging.getLogger("pika").setLevel(logging.INFO)
+
 
 class RabbitTest(TestClass):
 
     config = {
-        "username": "catcher",
-        "password": "catcher",
+        "username": "guest",
+        "password": "guest",
         "server": "localhost:5672",
         "exchange": "catcher.test.exchange",
         "routingKey": "test",
@@ -48,8 +51,8 @@ class RabbitTest(TestClass):
             variables:
                 rabbit_config:
                     server: localhost:5672
-                    username: catcher
-                    password: catcher
+                    username: guest
+                    password: guest
             steps:
                 - rabbit:
                     publish:
@@ -64,3 +67,27 @@ class RabbitTest(TestClass):
         if method_frame:
             self.assertEqual('Catcher test message', body.decode('UTF-8'))
             self.rabbitChannel.basic_ack(method_frame.delivery_tag)
+
+    def test_consume_message(self):
+        # publish a message to the exchange so that it can be read by the queue
+        self.rabbitChannel.basic_publish(exchange=self.config['exchange'],
+                             routing_key=self.config['routingKey'],
+                             properties=None,body='Test queue message')
+        self.populate_file('main.yaml', '''---
+            variables:
+                rabbit_config:
+                    server: localhost:5672
+                    username: guest
+                    password: guest
+            steps:
+                - rabbit:
+                    consume:
+                        config: '{{ rabbit_config }}'
+                        queue: 'catcher.test'
+                    register: {qMessage: '{{ OUTPUT }}'}
+                - check:
+                    equals: {the: '{{ qMessage }}', is: 'Test queue message'}
+            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+           

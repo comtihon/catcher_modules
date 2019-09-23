@@ -79,7 +79,7 @@ services:
         - 5672:5672
         - 15672:15672
     volumes:
-        - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@app-rabbitmq:cached
+        - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@catcher-rabbit:cached
     environment:
         RABBITMQ_DEFAULT_USER: catcher
         RABBITMQ_DEFAULT_PASS: catcher

@@ -73,6 +73,8 @@ class Rabbit(ExternalStep):
         if method == 'publish':
             properties = pika.BasicProperties(None)
             return variables, self.publish(rabbitChannel, operation['exchange'], operation['routing_key'], properties,operation['data'])
+        elif method == 'consume':
+            return variables, self.consume(rabbitChannel, operation['queue'])    
         else:
             raise AttributeError('unknown method: ' + method)
         
@@ -81,3 +83,10 @@ class Rabbit(ExternalStep):
                              routing_key=routingKey,
                              properties=properties,body=message)
         rabbitChannel.close()
+
+    def consume(self, rabbitChannel, queue):
+        method_frame, header_frame, body = rabbitChannel.basic_get(queue)
+        if method_frame:
+            rabbitChannel.basic_ack(method_frame.delivery_tag)
+        rabbitChannel.close()
+        return body.decode('UTF-8')
