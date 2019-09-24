@@ -13,8 +13,8 @@ logging.getLogger("pika").setLevel(logging.INFO)
 class RabbitTest(TestClass):
 
     config = {
-        "username": "guest",
-        "password": "guest",
+        "username": "catcher",
+        "password": "catcher",
         "server": "localhost:5672",
         "exchange": "catcher.test.exchange",
         "routingKey": "test",
@@ -51,8 +51,8 @@ class RabbitTest(TestClass):
             variables:
                 rabbit_config:
                     server: localhost:5672
-                    username: guest
-                    password: guest
+                    username: catcher
+                    password: catcher
             steps:
                 - rabbit:
                     publish:
@@ -77,8 +77,8 @@ class RabbitTest(TestClass):
             variables:
                 rabbit_config:
                     server: localhost:5672
-                    username: guest
-                    password: guest
+                    username: catcher
+                    password: catcher
             steps:
                 - rabbit:
                     consume:
