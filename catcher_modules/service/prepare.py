@@ -13,7 +13,8 @@ class Prepare(ExternalStep):
 
     :populate: Populate existing service with predefined data.
 
-    - <service_name>: See :meth:`catcher_modules.service.prepare.populator` for more documentation.
+    - <service_name>: See each own step's documentation for the parameters description and
+                      information. Note, that not all steps are compatible with prepare step.
     Please, keep it mind, that resources directory is used for all data and schema files.
 
     Populate existing postgres with data from `pg_data_file`.

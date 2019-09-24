@@ -180,6 +180,7 @@ class SqlAlchemyDb:
             raise Exception('Can\'t map table without primary key.')
 
     def _check_data(self, conf, table_name, path_to_csv):
+        # TODO templates in csv?
         iter_csv = iter(generator_utils.csv_to_generator(path_to_csv))
         keys = next(iter_csv)
 

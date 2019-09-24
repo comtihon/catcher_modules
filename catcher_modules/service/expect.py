@@ -5,9 +5,14 @@ import catcher_modules.database
 
 class Expect(ExternalStep):
     """
-    High level test function. Compare data with expected one.
+    High level test function.
 
     :Input:
+
+    :compare: Compare the existing data with expected one.
+
+    - <service_name>: See each own step's documentation for the parameters description and
+                      information. Note, that not all steps are compatible with prepare step.
 
     Check expected schema and data in postgres.
     ::
