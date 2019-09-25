@@ -6,7 +6,7 @@ from typing import List
 
 from catcher.utils.logger import debug
 
-from utils import generator_utils
+from catcher_modules.utils import generator_utils
 
 
 class EmptyRow:
