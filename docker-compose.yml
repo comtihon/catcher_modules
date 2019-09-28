@@ -83,7 +83,7 @@ services:
     environment:
         RABBITMQ_DEFAULT_USER: catcher
         RABBITMQ_DEFAULT_PASS: catcher
-        RABBITMQ_DEFAULT_VHOST: /
+        RABBITMQ_DEFAULT_VHOST: catcher.virtual.host
 
 volumes:
   data:
