@@ -56,8 +56,8 @@ class RabbitTest(TestClass):
                 rabbit_config:
                     server: 127.0.0.1:5672
                     virtualhost: catcher.virtual.host
-                    username: guest
-                    password: guest
+                    username: catcher
+                    password: catcher
             steps:
                 - rabbit:
                     publish:
@@ -86,8 +86,8 @@ class RabbitTest(TestClass):
                 rabbit_config:
                     server: 127.0.0.1:5672
                     virtualhost: catcher.virtual.host
-                    username: guest
-                    password: guest
+                    username: catcher
+                    password: catcher
             steps:
                 - rabbit:
                     publish:
@@ -124,8 +124,8 @@ class RabbitTest(TestClass):
                 rabbit_config:
                     server: 127.0.0.1:5672
                     virtualhost: catcher.virtual.host
-                    username: guest
-                    password: guest
+                    username: catcher
+                    password: catcher
             steps:
                 - rabbit:
                     consume:
