@@ -117,7 +117,7 @@ class Rabbit(ExternalStep):
             method_frame, header_frame, body = channel.basic_get(queue)
             if method_frame:
                 channel.basic_ack(method_frame.delivery_tag)
-                message = body.decode('UTF-8')
+                message = try_get_object(body.decode('UTF-8'))
         return message
     
     def _get_data(self, operation):
