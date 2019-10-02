@@ -77,13 +77,14 @@ services:
     hostname: catcher-rabbit
     ports:
         - 5672:5672
+        - 5671:5671
         - 15672:15672
+        - 15671:15671
     volumes:
-        - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit@catcher-rabbit:cached
-    environment:
-        RABBITMQ_DEFAULT_USER: catcher
-        RABBITMQ_DEFAULT_PASS: catcher
-        RABBITMQ_DEFAULT_VHOST: catcher.virtual.host
+        - ./test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+        - ./test/rabbit-config/ca_certificate.pem:/etc/rabbitmq/certs/ca_certificate.pem
+        - ./test/rabbit-config/server_certificate.pem:/etc/rabbitmq/certs/server_certificate.pem
+        - ./test/rabbit-config/server_key.pem:/etc/rabbitmq/certs/server_key.pem
 
 volumes:
   data:

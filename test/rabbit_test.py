@@ -2,12 +2,10 @@ import json
 from os.path import join
 
 import pika
+import ssl
 
 from catcher.core.runner import Runner
 from test.abs_test_class import TestClass
-
-
-
 
 class RabbitTest(TestClass):
 
@@ -30,7 +28,37 @@ class RabbitTest(TestClass):
     def _get_connection_parameters(self, config):
         import pika
         amqpURL = 'amqp://{}:{}@{}/{}'
-        return pika.URLParameters(amqpURL.format(config['username'], config['password'], config['server'], config['virtualhost']))
+        amqpsURL = 'amqps://{}:{}@{}/{}'
+        sslOptions = config.get('sslOptions')
+        if sslOptions is not None:
+            parameters = pika.URLParameters(amqpsURL.format(config['username'], config['password'], config['server'], config['virtualhost']))
+            parameters.ssl = True
+            parameters.ssl_options = self._get_ssl_options(sslOptions)
+            return parameters
+        else:
+            return pika.URLParameters(amqpURL.format(config['username'], config['password'], config['server'], config['virtualhost']))
+
+    def _get_ssl_options(self, sslOptions):
+        #PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2
+        sslVersion = {
+            'PROTOCOL_TLSv1': ssl.PROTOCOL_TLSv1,
+            'PROTOCOL_TLSv1_1': ssl.PROTOCOL_TLSv1_1,
+            'PROTOCOL_TLSv1_2': ssl.PROTOCOL_TLSv1_2
+        }
+        #CERT_NONE, CERT_OPTIONAL or CERT_REQUIRED
+        certReqs= {
+            'CERT_NONE': ssl.CERT_NONE,
+            'CERT_OPTIONAL': ssl.CERT_OPTIONAL,
+            'CERT_REQUIRED': ssl.CERT_REQUIRED,
+        }
+
+        return {
+            'ssl_version': sslVersion.get(sslOptions.get('ssl_version'), ssl.PROTOCOL_TLSv1_2),
+            'ca_certs': sslOptions.get('ca_certs'),
+            'keyfile': sslOptions.get('keyfile'),
+            'certfile': sslOptions.get('certfile'), 
+            'cert_reqs': certReqs.get(sslOptions.get('cert_reqs'), 'CERT_NONE') 
+        }
 
     def setUp(self):
         super().setUp()
@@ -54,8 +82,9 @@ class RabbitTest(TestClass):
         self.populate_file('main.yaml', '''---
             variables:
                 rabbit_config:
-                    server: 127.0.0.1:5672
+                    server: 127.0.0.1:5671
                     virtualhost: catcher.virtual.host
+                    sslOptions: {'ssl_version': 'PROTOCOL_TLSv1_2', 'cert_reqs': 'CERT_NONE'}
                     username: catcher
                     password: catcher
             steps:
