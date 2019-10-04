@@ -9,3 +9,9 @@ catcher\_modules.mq.kafka module
 
 .. autoclass:: catcher_modules.mq.kafka.Kafka
     :members:
+
+catcher\_modules.mq.rabbit module
+--------------------------------
+
+.. autoclass:: catcher_modules.mq.rabbit.Rabbit
+    :members:
