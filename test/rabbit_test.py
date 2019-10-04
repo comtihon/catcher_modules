@@ -27,16 +27,13 @@ class RabbitTest(TestClass):
 
     def _get_connection_parameters(self, config):
         import pika
-        amqpURL = 'amqp://{}:{}@{}/{}'
-        amqpsURL = 'amqps://{}:{}@{}/{}'
+        amqpURL = 'amqp{}://{}:{}@{}/{}'
         sslOptions = config.get('sslOptions')
+        parameters = pika.URLParameters(amqpURL.format('s' if sslOptions else '', config['username'], config['password'], config['server'], config['virtualhost']))
         if sslOptions is not None:
-            parameters = pika.URLParameters(amqpsURL.format(config['username'], config['password'], config['server'], config['virtualhost']))
             parameters.ssl = True
             parameters.ssl_options = self._get_ssl_options(sslOptions)
-            return parameters
-        else:
-            return pika.URLParameters(amqpURL.format(config['username'], config['password'], config['server'], config['virtualhost']))
+        return parameters
 
     def _get_ssl_options(self, sslOptions):
         #PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2
