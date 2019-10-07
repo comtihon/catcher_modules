@@ -47,7 +47,7 @@ class Expect(ExternalStep):
         for service, data in input_data['compare'].items():
             if service in db_modules:  # database
                 found = module_utils.find_class_in_module('catcher_modules.database.' + service, service)
-                found(**{service: data}).check(variables['RESOURCES_DIR'], **data)
+                found(**{service: data}).check(variables, **data)
             # TODO mongodb
             # TODO mq
             # TODO cache

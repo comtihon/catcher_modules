@@ -191,3 +191,43 @@ class ExpectTest(TestClass):
                             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertFalse(runner.run_tests())
+
+    def test_expect_template(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,{{name}}1@test.com\n"
+                                                "2,{{name}}2@test.com\n"
+                           )
+        self.populate_file('main.yaml', '''---
+            variables:
+                name: 'test'
+            steps:
+                - expect:
+                    compare:
+                        postgres:
+                            conf: 'test:test@localhost:5433/test'
+                            data:
+                                foo: foo.csv
+            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_expect_template_strict(self):
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,{{name}}1@test.com\n"
+                                                "2,{{name}}2@test.com\n"
+                           )
+        self.populate_file('main.yaml', '''---
+            variables:
+                name: 'test'
+            steps:
+                - expect:
+                    compare:
+                        postgres:
+                            conf: 'test:test@localhost:5433/test'
+                            data:
+                                foo: foo.csv
+                            strict: true
+            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+

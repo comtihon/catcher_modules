@@ -49,7 +49,7 @@ class Prepare(ExternalStep):
         for service, data in input_data['populate'].items():
             if service in db_modules:  # database
                 found = module_utils.find_class_in_module('catcher_modules.database.' + service, service)
-                found(**{service: data}).populate(variables['RESOURCES_DIR'], **data)
+                found(**{service: data}).populate(variables, **data)
             # TODO cache
             # TODO s3
             # TODO http mock

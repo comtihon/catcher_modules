@@ -41,7 +41,7 @@ class TestClass(unittest.TestCase):
     def get_values(self, table):
         with self.connection as conn:
             cur = conn.cursor()
-            cur.execute(f"select * from {table}")
+            cur.execute('select * from ' + table)
             response = cur.fetchall()
             conn.commit()
             cur.close()

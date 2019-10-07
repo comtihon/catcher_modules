@@ -203,7 +203,7 @@ class MySqlTest(TestClass):
     def get_values(self, table):
         conn = pymysql.connect(**self.conf)
         cur = conn.cursor()
-        cur.execute(f"select * from {table}")
+        cur.execute('select * from ' + table)
         response = cur.fetchall()
         conn.commit()
         cur.close()

@@ -126,3 +126,69 @@ class PrepareTest(TestClass):
         self.assertEqual('test1@test.com', response[0][1])
         self.assertEqual(2, response[1][0])
         self.assertEqual('test2@test.com', response[1][1])
+
+    def test_populate_templates(self):
+        self.populate_file('resources/pg_schema.sql', '''
+                CREATE TABLE foo(
+                    user_id      integer    primary key,
+                    email        varchar(36)    NOT NULL
+                );
+                ''')
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,{{ email }}\n"
+                           )
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        postgres: 'test:test@localhost:5433/test'
+                        email: 'test@test.com'
+                    steps:
+                        - prepare:
+                            populate:
+                                postgres:
+                                    conf: '{{ postgres }}'
+                                    schema: pg_schema.sql
+                                    data:
+                                        foo: foo.csv
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual(1, len(response))
+        self.assertEqual(1, response[0][0])
+        self.assertEqual('test@test.com', response[0][1])
+
+    def test_populate_generate(self):
+        self.populate_file('resources/pg_schema.sql', '''
+                CREATE TABLE foo(
+                    user_id      integer    primary key,
+                    email        varchar(36)    NOT NULL
+                );
+                ''')
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "{% for user in users %}"
+                                                "{{ loop.index }},{{ user }}\n"
+                                                "{% endfor %}"
+                                                "4,other_email\n"
+                           )
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        postgres: 'test:test@localhost:5433/test'
+                        users: ['test_1', 'test_2', 'test_3']
+                    steps:
+                        - prepare:
+                            populate:
+                                postgres:
+                                    conf: '{{ postgres }}'
+                                    schema: pg_schema.sql
+                                    data:
+                                        foo: foo.csv
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual(4, len(response))
+        self.assertEqual(1, response[0][0])
+        self.assertEqual('test_1', response[0][1])
+        self.assertEqual('test_2', response[1][1])
+        self.assertEqual('test_3', response[2][1])
+        self.assertEqual('other_email', response[3][1])

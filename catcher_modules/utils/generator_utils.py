@@ -1,10 +1,9 @@
 import csv
 
 
-def csv_to_generator(filename):
-    with open(filename, "r") as csv_file:
-        for row in csv.reader(csv_file):
-            yield row
+def csv_to_generator(stream):
+    for row in csv.reader(stream):
+        yield row
 
 
 # TODO make me memory-efficient

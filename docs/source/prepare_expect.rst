@@ -12,6 +12,8 @@ How it worked before?
 You have to populate the database manually::
 
     ---
+    variables:
+        username: 'test'
     steps:
         - postgres:
             actions:
@@ -25,7 +27,7 @@ You have to populate the database manually::
                   name: 'create bar table'
                 - request:
                     conf: '{{ postgres }}'
-                    query: "INSERT INTO foo values (1,"test1@test.com"),(2,"test2@test.com");
+                    query: "INSERT INTO foo values (1,"{{username}}1@test.com"),(2,"{{username}}2@test.com");
                   name: 'populate foo table'
                 - request:
                     conf: '{{ postgres }}'
@@ -57,8 +59,8 @@ How it works now?
 `resources/foo.csv`::
 
     user_id,email
-    1,test1@test.com
-    2,test2@test.com
+    1,{{username}}1@test.com
+    2,{{username}}2@test.com
 
 `resources/bar.csv`::
 
@@ -82,7 +84,16 @@ How it works now?
                         bar: bar.csv
         ... and now you can run your test steps
 
-In this step you prepare all the data needed. Tables will be created and populated.
+| In this step you prepare all the data needed. Tables will be created and populated.
+| **Note** on templating - it is fully supported. Even new rows can be generated in the csv files.
+
+`foo.csv`::
+
+    user_id,email
+    {% for user in users %}
+    {{ loop.index }},{{ user }}
+    {% endfor %}
+    4,other_email
 
 Expect
 ======

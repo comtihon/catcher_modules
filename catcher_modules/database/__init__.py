@@ -1,10 +1,12 @@
 import csv
 import json
+from io import StringIO
 from abc import abstractmethod
 from itertools import zip_longest
 from typing import List
 
 from catcher.utils.logger import debug
+from catcher.utils.misc import fill_template_str
 
 from catcher_modules.utils import generator_utils
 
@@ -35,7 +37,7 @@ class SqlAlchemyDb:
         query = in_data['query']
         return self.__execute(conf, query)
 
-    def populate(self, resources, conf=None, schema=None, data: dict = None, **kwargs):
+    def populate(self, variables, conf=None, schema=None, data: dict = None, **kwargs):
         """ Populate database with prepared scripts (DDL or CSV with data).
 
         :Input:
@@ -69,15 +71,16 @@ class SqlAlchemyDb:
                         schema: {{ pg_schema }}
                         data: {{ pg_data }}
         """
+        resources = variables['RESOURCES_DIR']
         if schema is not None:
             with open(resources + '/' + schema) as fd:
                 ddl_sql = fd.read()
                 self.__execute(conf, ddl_sql)
         if data is not None and data:
             for table_name, path_to_csv in data.items():
-                self.__populate_csv(conf, table_name, resources + '/' + path_to_csv)
+                self.__populate_csv(conf, table_name, resources + '/' + path_to_csv, variables)
 
-    def check(self, resources, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
+    def check(self, variables, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
         """ Check database schema and data.
 
         :Input:
@@ -94,7 +97,8 @@ class SqlAlchemyDb:
 
         :schema: path to the schema file. *Optional*
 
-        :data: dictionary with keys = tables and values - paths to csv files with data. *Optional*
+        :data: dictionary with keys = tables and values - paths to csv files with data.
+               Jinja2 templates supported. *Optional*
 
         :strict: Strictly check the data. Will pass only if no other data exists and the data is in the
          same order, as in the csv. *Optional* (default is false)
@@ -133,34 +137,35 @@ class SqlAlchemyDb:
                         strict: true
 
         """
+        resources = variables['RESOURCES_DIR']
         if schema is not None:
             self.__check_schema(conf, resources + '/' + schema)
         if data is not None:
             for table_name, path_to_csv in data.items():
                 csv_file = resources + '/' + path_to_csv
+                csv_stream = self.__read_n_fill_csv(csv_file, variables)
                 if strict:
-                    self._check_data_strict(conf, table_name, csv_file)
+                    self._check_data_strict(conf, table_name, csv_stream)
                 else:
-                    self._check_data(conf, table_name, csv_file)
+                    self._check_data(conf, table_name, csv_stream)
 
-    def __populate_csv(self, conf, table_name, path_to_csv):
-        with open(path_to_csv) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            line_count = 0
-            from sqlalchemy import create_engine
-            engine = create_engine(self.__form_conf(conf))
+    def __populate_csv(self, conf, table_name, path_to_csv, variables):
+        csv_reader = csv.reader(self.__read_n_fill_csv(path_to_csv, variables), delimiter=',')
+        line_count = 0
+        from sqlalchemy import create_engine
+        engine = create_engine(self.__form_conf(conf))
 
-            row_table = self.__automap_table(table_name, engine)
-            from sqlalchemy.orm import Session
-            session = Session(engine)
-            names = None
-            for row in csv_reader:
-                if line_count == 0:
-                    names = row
-                    line_count += 1
-                else:
-                    session.add(row_table(**dict(zip(names, row))))
-            session.commit()
+        row_table = self.__automap_table(table_name, engine)
+        from sqlalchemy.orm import Session
+        session = Session(engine)
+        names = None
+        for row in csv_reader:
+            if line_count == 0:
+                names = row
+                line_count += 1
+            else:
+                session.add(row_table(**dict(zip(names, row))))
+        session.commit()
 
     def __check_schema(self, conf, schema_file):
         with open(schema_file) as fd:
@@ -169,19 +174,8 @@ class SqlAlchemyDb:
                 info = self.table_info(table)
         return True
 
-    def __automap_table(self, table_name: str, engine):
-        from sqlalchemy.ext.automap import automap_base
-
-        Base = automap_base()
-        Base.prepare(engine, reflect=True)
-        try:
-            return Base.classes[table_name]
-        except KeyError:
-            raise Exception('Can\'t map table without primary key.')
-
-    def _check_data(self, conf, table_name, path_to_csv):
-        # TODO templates in csv?
-        iter_csv = iter(generator_utils.csv_to_generator(path_to_csv))
+    def _check_data(self, conf, table_name, csv_stream):
+        iter_csv = iter(generator_utils.csv_to_generator(csv_stream))
         keys = next(iter_csv)
 
         from sqlalchemy import create_engine
@@ -201,11 +195,11 @@ class SqlAlchemyDb:
         finally:
             session.close()
 
-    def _check_data_strict(self, conf, table_name, path_to_csv):
+    def _check_data_strict(self, conf, table_name, csv_stream):
         from sqlalchemy import create_engine
         engine = create_engine(self.__form_conf(conf))
         table = self.__automap_table(table_name, engine)
-        csv_generator = generator_utils.csv_to_generator(path_to_csv)
+        csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
         db_generator = generator_utils.table_to_generator(table, engine)
         sentinel = EmptyRow()
@@ -235,6 +229,23 @@ class SqlAlchemyDb:
                                                 conf['dbname'])
         else:
             return self.driver + '://' + conf
+
+    @classmethod
+    def __automap_table(cls, table_name: str, engine):
+        from sqlalchemy.ext.automap import automap_base
+
+        Base = automap_base()
+        Base.prepare(engine, reflect=True)
+        try:
+            return Base.classes[table_name]
+        except KeyError:
+            raise Exception('Can\'t map table without primary key.')
+
+    @classmethod
+    def __read_n_fill_csv(cls, csv_path, variables):
+        with open(csv_path) as csv_file:
+            csv_content = fill_template_str(csv_file.read(), variables)
+        return StringIO(csv_content)
 
     @staticmethod
     def gather_response(cursor):
