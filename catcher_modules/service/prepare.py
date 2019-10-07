@@ -48,7 +48,7 @@ class Prepare(ExternalStep):
         db_modules = module_utils.list_modules_in_package(catcher_modules.database)
         for service, data in input_data['populate'].items():
             if service in db_modules:  # database
-                found = module_utils.find_class_in_module(f'catcher_modules.database.{service}', service)
+                found = module_utils.find_class_in_module('catcher_modules.database.' + service, service)
                 found(**{service: data}).populate(variables['RESOURCES_DIR'], **data)
             # TODO cache
             # TODO s3
