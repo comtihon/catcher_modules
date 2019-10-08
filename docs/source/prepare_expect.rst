@@ -159,4 +159,5 @@ How it works now?
                             bar: bar.csv
 
 
-Note that not all steps support prepare-expect for now.
+| **Note** that not all steps support prepare-expect for now.
+| **Note** on templating - it is fully supported. Even new rows can be generated in the csv files.
