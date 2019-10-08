@@ -1,1 +1,1 @@
-catcher>=1.19.1
+catcher>=1.19.5

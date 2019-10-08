@@ -21,3 +21,15 @@ catcher\_modules.service.s3 module
 
 .. autoclass:: catcher_modules.service.s3.S3
     :members:
+
+catcher\_modules.service.prepare module
+---------------------------------------
+
+.. autoclass:: catcher_modules.service.prepare.Prepare
+    :members:
+
+catcher\_modules.service.expect module
+---------------------------------------
+
+.. autoclass:: catcher_modules.service.expect.Expect
+    :members:

@@ -1,7 +1,9 @@
 from os.path import join
 
 import pymysql
+import test
 from catcher.core.runner import Runner
+from catcher.utils.file_utils import ensure_empty
 
 from test.abs_test_class import TestClass
 
@@ -18,6 +20,10 @@ class MySqlTest(TestClass):
                 'port': 3307,
                 'db': 'test'}
 
+    @property
+    def connection(self):
+        return pymysql.connect(**self.conf)
+
     def setUp(self):
         super().setUp()
         conn = pymysql.connect(**self.conf)
@@ -28,12 +34,15 @@ class MySqlTest(TestClass):
         conn.commit()
         cur.close()
         conn.close()
+        ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
 
     def tearDown(self):
         super().tearDown()
         conn = pymysql.connect(**self.conf)
         cur = conn.cursor()
         cur.execute("DROP TABLE test;")
+        cur.execute("DROP TABLE if exists foo;")
+        cur.execute("DROP TABLE if exists bar;")
         conn.commit()
         cur.close()
         conn.close()
@@ -89,14 +98,8 @@ class MySqlTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
-        conn = pymysql.connect(**self.conf)
-        cur = conn.cursor()
-        cur.execute("select count(*) from test")
-        response = cur.fetchall()
-        conn.commit()
-        cur.close()
-        conn.close()
-        self.assertEqual(((3,),), response)
+        response = self.get_values('test')
+        self.assertEqual(((1, 1), (2, 2), (3, 3)), response)
 
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---
@@ -119,3 +122,91 @@ class MySqlTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_populate(self):
+        self.populate_file('resources/schema.sql', '''
+                        CREATE TABLE foo(
+                            user_id      integer    primary key,
+                            email        varchar(36)    NOT NULL
+                        );
+                        ''')
+
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "1,test1@test.com\n"
+                                                "2,test2@test.com\n"
+                           )
+
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - prepare:
+                                    populate:
+                                        mysql:
+                                            conf: 'root:test@localhost:3307/test'
+                                            schema: schema.sql
+                                            data:
+                                                foo: foo.csv
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual(2, len(response))
+        self.assertEqual(1, response[0][0])
+        self.assertEqual('test1@test.com', response[0][1])
+        self.assertEqual(2, response[1][0])
+        self.assertEqual('test2@test.com', response[1][1])
+
+    def test_expect_strict(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                mysql:
+                                                    conf: 'root:test@localhost:3307/test'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                mysql:
+                                                    conf: 'root:test@localhost:3307/test'
+                                                    data:
+                                                        foo: foo.csv
+                                                    strict: true
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_expect(self):
+        self.populate_schema_file()
+        self.populate_data_file()
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                mysql:
+                                                    conf: 'root:test@localhost:3307/test'
+                                                    schema: schema.sql
+                                                    data:
+                                                        foo: foo.csv
+                                        - expect:
+                                            compare:
+                                                mysql:
+                                                    conf: 'root:test@localhost:3307/test'
+                                                    data:
+                                                        foo: foo.csv
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def get_values(self, table):
+        conn = pymysql.connect(**self.conf)
+        cur = conn.cursor()
+        cur.execute('select * from ' + table)
+        response = cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return response
+
