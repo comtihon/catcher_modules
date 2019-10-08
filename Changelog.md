@@ -1,6 +1,10 @@
-# 3.3.0
+# 3.4.0
 ## New
 * Prepare - expect step. Supported in all subclasses of `SqlAlchemyDb`
+
+# 3.3.0
+## New
+* Rabbit step.
 
 # 3.2.0
 ## New

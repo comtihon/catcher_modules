@@ -8,6 +8,7 @@
    source/catcher_modules.database
    source/catcher_modules.mq
    source/catcher_modules.service
+   source/prepare_expect
 
 
 Indices and tables
