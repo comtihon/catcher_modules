@@ -27,8 +27,8 @@ class Prepare(ExternalStep):
                         schema: {{ pg_schema_file }}
                         data: {{ pg_data_file }}
 
-    Multiple populates and can be run at the same time. This will populate existing s3
-     with data, start local salesforce and postgres in docker and populates them as well.
+    Multiple populates and can be run at the same time. This will populate existing s3 with data, start local
+    salesforce and postgres in docker and populates them as well.
     ::
         steps:
             - prepare:

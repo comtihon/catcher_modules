@@ -24,6 +24,7 @@ class Expect(ExternalStep):
                         schema: {{ expected_schema_file }}
                         data: {{ expected_data_file }}
 
+    Check data in s3 and redshift.
     ::
         steps:
             - expect:
