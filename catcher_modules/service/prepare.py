@@ -1,5 +1,4 @@
 from catcher.steps.external_step import ExternalStep
-from catcher.steps.step import update_variables
 
 import catcher_modules.database
 from catcher_modules.utils import module_utils

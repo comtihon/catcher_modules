@@ -33,3 +33,12 @@ catcher\_modules.service.expect module
 
 .. autoclass:: catcher_modules.service.expect.Expect
     :members:
+
+catcher\_modules.service.email module
+---------------------------------------
+
+.. autoclass:: catcher_modules.service.email.Message
+    :members:
+
+.. autoclass:: catcher_modules.service.email.Email
+    :members:

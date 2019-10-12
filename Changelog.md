@@ -1,3 +1,7 @@
+# 3.5.0
+## New
+* Email send/receive step.
+
 # 3.4.0
 ## New
 * Prepare - expect step. Supported in all subclasses of `SqlAlchemyDb`

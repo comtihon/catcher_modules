@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from io import StringIO
 from abc import abstractmethod
 from itertools import zip_longest
@@ -139,10 +140,10 @@ class SqlAlchemyDb:
         """
         resources = variables['RESOURCES_DIR']
         if schema is not None:
-            self.__check_schema(conf, resources + '/' + schema)
+            self.__check_schema(conf, os.path.join(resources, schema))
         if data is not None:
             for table_name, path_to_csv in data.items():
-                csv_file = resources + '/' + path_to_csv
+                csv_file = os.path.join(resources, path_to_csv)
                 csv_stream = self.__read_n_fill_csv(csv_file, variables)
                 if strict:
                     self._check_data_strict(conf, table_name, csv_stream)
