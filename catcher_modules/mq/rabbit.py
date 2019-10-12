@@ -33,7 +33,7 @@ class Rabbit(ExternalStep):
 
     - config: rabbitmq config object
     - exchange: exchange to publish message
-    - routing_key: routing key *Optional*
+    - routing_key: routing key
     - headers: headers json *Optional*
     - data: data to be produced
     - data_from_file: data to be published. File can be used as data source. *Optional* Either `data` or `data_from_file` should present.
