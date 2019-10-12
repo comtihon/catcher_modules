@@ -38,9 +38,8 @@ class SqlAlchemyDb:
         return self.__execute(conf, query)
 
     def populate(self, variables, conf=None, schema=None, data: dict = None, **kwargs):
-        """ Populate database with prepared scripts (DDL or CSV with data).
-
-        :Input:
+        """
+        :Input:  Populate database with prepared scripts (DDL or CSV with data).
 
         :populate: - populate a database with the data and/or run DDL to create schema.
 
@@ -57,19 +56,21 @@ class SqlAlchemyDb:
         :data: dictionary with keys = tables and values - paths to csv files with data. *Optional*
 
         :F.e.:
+        populate postgres
         ::
-        variables:
-            pg_schema: schema.sql
-            pg_data:
-                foo: foo.csv
-                bar: bar.csv
-        steps:
-            - prepare:
-                populate:
-                    postgres:
-                        conf: {{ pg_conf }}
-                        schema: {{ pg_schema }}
-                        data: {{ pg_data }}
+            variables:
+                pg_schema: schema.sql
+                pg_data:
+                    foo: foo.csv
+                    bar: bar.csv
+            steps:
+                - prepare:
+                    populate:
+                        postgres:
+                            conf: {{ pg_conf }}
+                            schema: {{ pg_schema }}
+                            data: {{ pg_data }}
+
         """
         resources = variables['RESOURCES_DIR']
         if schema is not None:
@@ -80,10 +81,9 @@ class SqlAlchemyDb:
             for table_name, path_to_csv in data.items():
                 self.__populate_csv(conf, table_name, resources + '/' + path_to_csv, variables)
 
-    def check(self, variables, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
-        """ Check database schema and data.
-
-        :Input:
+    def expect(self, variables, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
+        """
+        :Input: Check database schema and data.
 
         :compare: - compare the data in the database with the expected data.
 
@@ -104,37 +104,37 @@ class SqlAlchemyDb:
          same order, as in the csv. *Optional* (default is false)
 
         :F.e.:
-        - schema:
+        `schema`
         ::
-        {
-            "foo": {
-                "columns": {
-                    "user_id": "integer",
-                    "email": "varchar(36)"
+            {
+                "foo": {
+                    "columns": {
+                        "user_id": "integer",
+                        "email": "varchar(36)"
+                    },
+                    "keys": ["user_id"]
                 },
-                "keys": ["user_id"]
-            },
-            "bar": {
-                "columns": {
-                    "key": "varchar(36)",
-                    "value": "varchar(36)"
-                },
-                "keys": ["key"]
+                "bar": {
+                    "columns": {
+                        "key": "varchar(36)",
+                        "value": "varchar(36)"
+                    },
+                    "keys": ["key"]
+                }
             }
-        }
 
-        - test:
+        `test`
         ::
-        steps:
-            - expect:
-                compare:
-                    postgres:
-                        conf: 'test:test@localhost:5433/test'
-                        schema: check_schema.json
-                        data:
-                            foo: foo.csv
-                            bar: bar.csv
-                        strict: true
+            steps:
+                - expect:
+                    compare:
+                        postgres:
+                            conf: 'test:test@localhost:5433/test'
+                            schema: check_schema.json
+                            data:
+                                foo: foo.csv
+                                bar: bar.csv
+                            strict: true
 
         """
         resources = variables['RESOURCES_DIR']

@@ -6,7 +6,7 @@ class Couchbase(ExternalStep):
     """
     :Input:
 
-    :conf:  couchbase configuration. Is an object.. **Required**.
+    :conf:  couchbase configuration. Is an object. **Required**.
 
     - bucket: bucket to work with
     - user: database user (optional)
