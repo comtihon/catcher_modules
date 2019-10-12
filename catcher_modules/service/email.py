@@ -228,6 +228,6 @@ class Email(ExternalStep):
         encoders.encode_base64(part)
         part.add_header(
             "Content-Disposition",
-            f"attachment; filename= {attachment}",
+            "attachment; filename= " + attachment,
         )
         return part
