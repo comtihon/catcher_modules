@@ -22,7 +22,8 @@ def extras() -> dict:
         'docker': ["docker==3.7.*"],
         'elastic': ["elasticsearch==7.0.*"],
         's3': ["boto3==1.9.*"],
-        'rabbit': ["pika==0.13.1"]
+        'rabbit': ["pika==0.13.1"],
+        'email': ["imbox==0.9.*"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     return modules
