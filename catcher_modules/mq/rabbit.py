@@ -1,13 +1,15 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
-from catcher.utils.misc import try_get_object
+from catcher.utils.misc import try_get_object, fill_template_str, try_get_objects, fill_template
 import ssl
 import logging
+
+from catcher_modules.mq import MqStepMixin
 
 logging.getLogger("pika").setLevel(logging.WARN)
 
 
-class Rabbit(ExternalStep):
+class Rabbit(ExternalStep, MqStepMixin):
     """
     :Input:
 
@@ -41,7 +43,7 @@ class Rabbit(ExternalStep):
     ::
         variables:
             rabbitmq_config:
-                url: 127.0.0.1:5672
+                server: 127.0.0.1:5672
                 username: 'guest'
                 password: 'guest'
         steps:
@@ -54,7 +56,7 @@ class Rabbit(ExternalStep):
     ::
         variables:
             rabbitmq_config:
-                url: 127.0.0.1:5672
+                server: 127.0.0.1:5672
                 sslOptions: {'ssl_version': 'PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2', 'ca_certs': '/path/to/ca_cert', 'keyfile': '/path/to/key', 'certfile': '/path/to/cert'. 'cert_reqs': 'CERT_NONE, CERT_OPTIONAL or CERT_REQUIRED'}
                 username: 'guest'
                 password: 'guest'
@@ -71,7 +73,7 @@ class Rabbit(ExternalStep):
     ::
         variables:
             rabbitmq_config:
-                url: 127.0.0.1:5672
+                server: 127.0.0.1:5672
                 username: 'guest'
                 password: 'guest'
         steps:
@@ -83,28 +85,44 @@ class Rabbit(ExternalStep):
                     data_from_file: '{{ /path/to/file }}'
     """
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        method = Step.filter_predefined_keys(kwargs)  # publish/consume
+        self.method = method.lower()
+        conf = kwargs[method]
+        self.config = conf['config']
+        self.headers = conf.get('headers', {})
+        self.message = None
+        if self.method != 'consume':
+            self.exchange = conf['exchange']
+            self.routing_key = conf['routing_key']
+            self.message = conf.get('data', None)
+            self.file = None
+            if self.message is None:
+                self.file = conf['data_from_file']
+        else:
+            self.queue = conf['queue']
+
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
-        body = self.simple_input(variables)
-        method = Step.filter_predefined_keys(body)  # publish/consume
-
-        operation = body[method]
-
         # if virtual host is not specified default it to /
-        config = operation['config']
+        config = try_get_objects(fill_template_str(self.config, variables))
         if config.get('virtualhost') is None:
             config['virtualhost'] = ''
 
         connection_parameters = self._get_connection_parameters(config)
 
-        if method == 'publish':
-            message = self._get_data(operation)
-            return variables, self.publish(connection_parameters, operation['exchange'], operation['routing_key'],
-                                           operation.get('headers'), message)
-        elif method == 'consume':
-            return variables, self.consume(connection_parameters, operation['queue'])
+        if self.method == 'publish':
+            message = self.form_body(self.message, self.file, variables)
+            return variables, self.publish(connection_parameters,
+                                           fill_template_str(self.exchange, variables),
+                                           fill_template_str(self.routing_key, variables),
+                                           fill_template(self.headers, variables),
+                                           message)
+        elif self.method == 'consume':
+            return variables, self.consume(connection_parameters, fill_template_str(self.queue, variables))
         else:
-            raise AttributeError('unknown method: ' + method)
+            raise AttributeError('unknown method: ' + self.method)
 
     @staticmethod
     def publish(connection_parameters, exchange, routing_key, headers, message):
@@ -125,15 +143,6 @@ class Rabbit(ExternalStep):
                 channel.basic_ack(method_frame.delivery_tag)
                 message = try_get_object(body.decode('UTF-8'))
         return message
-
-    @staticmethod
-    def _get_data(operation):
-        if operation.get('data') is not None:
-            return str(operation.get('data'))
-        elif operation.get('data_from_file') is not None:
-            with open(operation['data_from_file'], 'r') as f:
-                return f.read()
-        raise AttributeError('data or data_from_file should be passed: ' + operation)
 
     def _get_connection_parameters(self, config):
         import pika
