@@ -59,8 +59,9 @@ class DockerTest(TestClass):
                                         hash: '{{ hash }}'
                                     register: {status: '{{ OUTPUT }}'}
                                 - wait:
-                                    seconds: 5
+                                    seconds: 50
                                     for:
+                                        - wait: {seconds: 5}
                                         - http:
                                             put:
                                                 url: 'http://localhost:8001/mockserver/expectation'
@@ -68,7 +69,8 @@ class DockerTest(TestClass):
                                                     httpRequest: {'path': '/some/path'}
                                                     httpResponse: {'body': 'hello world'}
                                                 response_code: 201
-                                        - wait: {seconds: 2}
+                                        - wait: {seconds: 50}
+                                - wait: {seconds: 5}
                                 - http:
                                     get:
                                         url: 'http://localhost:8001/some/path'
@@ -160,8 +162,9 @@ class DockerTest(TestClass):
                                             '1080/tcp': 8000
                                     register: {hash: '{{ OUTPUT }}'}
                                 - wait:
-                                    seconds: 5
+                                    seconds: 50
                                     for:
+                                        - wait: {seconds: 5}
                                         - http:
                                             put:
                                                 url: 'http://localhost:8000/mockserver/expectation'
@@ -169,7 +172,8 @@ class DockerTest(TestClass):
                                                     httpRequest: {'path': '/some/path'}
                                                     httpResponse: {'body': 'hello world'}
                                                 response_code: 201
-                                        - wait: {seconds: 2}
+                                        - wait: {seconds: 50}
+                                - wait: {seconds: 5}
                                 - http:
                                     get:
                                         url: 'http://localhost:8000/some/path'
