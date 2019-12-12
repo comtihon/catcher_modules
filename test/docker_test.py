@@ -52,7 +52,7 @@ class DockerTest(TestClass):
                                     start: 
                                         image: 'jamesdbloom/mockserver'
                                         ports:
-                                            '1080/tcp': 8000
+                                            '1080/tcp': 8001
                                     register: {hash: '{{ OUTPUT }}'}
                                 - docker:
                                     status:
@@ -63,14 +63,14 @@ class DockerTest(TestClass):
                                     for:
                                         - http:
                                             put:
-                                                url: 'http://localhost:8000/mockserver/expectation'
+                                                url: 'http://localhost:8001/mockserver/expectation'
                                                 body:
                                                     httpRequest: {'path': '/some/path'}
                                                     httpResponse: {'body': 'hello world'}
                                                 response_code: 201
                                 - http:
                                     get:
-                                        url: 'http://localhost:8000/some/path'
+                                        url: 'http://localhost:8001/some/path'
                                         response_code: 200
                                     register: {reply: '{{ OUTPUT }}'}
                                 - check:
