@@ -68,6 +68,7 @@ class DockerTest(TestClass):
                                                     httpRequest: {'path': '/some/path'}
                                                     httpResponse: {'body': 'hello world'}
                                                 response_code: 201
+                                        - wait: {seconds: 2}
                                 - http:
                                     get:
                                         url: 'http://localhost:8001/some/path'
@@ -168,6 +169,7 @@ class DockerTest(TestClass):
                                                     httpRequest: {'path': '/some/path'}
                                                     httpResponse: {'body': 'hello world'}
                                                 response_code: 201
+                                        - wait: {seconds: 2}
                                 - http:
                                     get:
                                         url: 'http://localhost:8000/some/path'

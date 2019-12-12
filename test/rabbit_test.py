@@ -3,7 +3,7 @@ from os.path import join
 
 import ssl
 import test
-
+import numbers
 from catcher.core.runner import Runner
 from catcher.utils.file_utils import ensure_empty
 
@@ -177,7 +177,7 @@ class RabbitTest(TestClass):
             method_frame, header_frame, body = channel.basic_get(self.config['queue'])
             if method_frame:
                 actual_test_data = json.loads(body.decode('UTF-8'))
-                if not str(actual_test_data["key"]).isnumeric():
+                if not isinstance(actual_test_data["key"], numbers.Number):
                     raise Exception('incorrect message format ' + str(actual_test_data))
                 channel.basic_ack(method_frame.delivery_tag)
 

@@ -9,6 +9,7 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install jq
 - sudo apt-get install libcouchbase-dev
+- sudo docker pull jamesdbloom/mockserver
 install:
 - pip install -e "file://`pwd`#egg=catcher-modules[all]"
 - python setup.py install
