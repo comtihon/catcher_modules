@@ -3,13 +3,13 @@ from time import sleep
 from catcher.steps.check import Operator
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
-from catcher.utils.file_utils import read_file
 from catcher.utils.logger import debug
 from catcher.utils.misc import try_get_object, fill_template_str
 from catcher.utils.time_utils import to_seconds
+from catcher_modules.mq import MqStepMixin
 
 
-class Kafka(ExternalStep):
+class Kafka(ExternalStep, MqStepMixin):
     """
     :Input:
 
@@ -62,15 +62,12 @@ class Kafka(ExternalStep):
         timeout = conf.get('timeout', {'seconds': 1})
         self.timeout = to_seconds(timeout)
         self.where = conf.get('where', None)
-        self.data = None
+        self.message = None
         if self.method != 'consume':
-            self.data = conf.get('data', None)
-            if self.data is None:
+            self.message = conf.get('data', None)
+            self.file = None
+            if self.message is None:
                 self.file = conf['data_from_file']
-
-    @classmethod
-    def construct_step(cls, body, *params, **kwargs):
-        return cls(**body)
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> tuple:
@@ -101,15 +98,9 @@ class Kafka(ExternalStep):
         return Kafka.get_messages(consumer, operator, variables, self.timeout)
 
     def produce(self, topic, variables):
-        message = self.__form_body(variables)
+        message = self.form_body(self.message, self.file, variables)
         with topic.get_sync_producer() as producer:
             producer.produce(message.encode('utf-8'))
-
-    def __form_body(self, variables):
-        data = self.data
-        if data is None:
-            data = read_file(fill_template_str(self.file, variables))
-        return fill_template_str(data, variables)
 
     @staticmethod
     def get_messages(consumer, where: Operator or None, variables, timeout) -> dict or None:
