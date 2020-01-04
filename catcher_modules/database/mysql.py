@@ -45,10 +45,6 @@ class MySql(ExternalStep, SqlAlchemyDb):
     def driver(self) -> str:
         return "mysql+pymysql"
 
-    @property
-    def default_port(self) -> int:
-        return 3306
-
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)

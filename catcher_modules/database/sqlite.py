@@ -33,10 +33,6 @@ class SQLite(ExternalStep, SqlAlchemyDb):
     def driver(self) -> str:
         return "sqlite"
 
-    @property
-    def default_port(self) -> int:
-        return 1433
-
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)

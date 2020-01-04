@@ -45,10 +45,6 @@ class Postgres(ExternalStep, SqlAlchemyDb):
     def driver(self) -> str:
         return "postgresql"
 
-    @property
-    def default_port(self) -> int:
-        return 5432
-
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)

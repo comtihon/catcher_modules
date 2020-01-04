@@ -10,6 +10,7 @@ from catcher.utils.logger import debug
 from catcher.utils.misc import fill_template_str
 
 from catcher_modules.utils import generator_utils
+from catcher_modules.utils import db_utils
 
 
 class EmptyRow:
@@ -21,11 +22,6 @@ class SqlAlchemyDb:
     @property
     @abstractmethod
     def driver(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def default_port(self) -> int:
         pass
 
     @abstractmethod
@@ -153,8 +149,7 @@ class SqlAlchemyDb:
     def __populate_csv(self, conf, table_name, path_to_csv, variables):
         csv_reader = csv.reader(self.__read_n_fill_csv(path_to_csv, variables), delimiter=',')
         line_count = 0
-        from sqlalchemy import create_engine
-        engine = create_engine(self.__form_conf(conf))
+        engine = db_utils.get_engine(conf, self.driver)
 
         row_table = self.__automap_table(table_name, engine)
         from sqlalchemy.orm import Session
@@ -179,8 +174,7 @@ class SqlAlchemyDb:
         iter_csv = iter(generator_utils.csv_to_generator(csv_stream))
         keys = next(iter_csv)
 
-        from sqlalchemy import create_engine
-        engine = create_engine(self.__form_conf(conf))
+        engine = db_utils.get_engine(conf, self.driver)
         row_table = self.__automap_table(table_name, engine)
         from sqlalchemy.orm import Session
         session = Session(engine)
@@ -197,8 +191,7 @@ class SqlAlchemyDb:
             session.close()
 
     def _check_data_strict(self, conf, table_name, csv_stream):
-        from sqlalchemy import create_engine
-        engine = create_engine(self.__form_conf(conf))
+        engine = db_utils.get_engine(conf, self.driver)
         table = self.__automap_table(table_name, engine)
         csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
@@ -210,26 +203,10 @@ class SqlAlchemyDb:
             raise Exception('Data check failed')
 
     def __execute(self, conf: str, query: str):
-        from sqlalchemy import create_engine
-        engine = create_engine(self.__form_conf(conf))
-        # TODO use with
-        connection = engine.connect()  # TODO pool pre-ping
-        try:
+        engine = db_utils.get_engine(conf, self.driver)
+        with engine.connect() as connection:
             result = connection.execute(query)
             return SqlAlchemyDb.gather_response(result)
-        finally:
-            connection.close()
-
-    def __form_conf(self, conf):
-        if not isinstance(conf, str):
-            return '{}://{}:{}@{}:{}/{}'.format(self.driver,
-                                                conf['user'],
-                                                conf['password'],
-                                                conf['host'],
-                                                conf.get('port', self.default_port),
-                                                conf['dbname'])
-        else:
-            return self.driver + '://' + conf
 
     @classmethod
     def __automap_table(cls, table_name: str, engine):
