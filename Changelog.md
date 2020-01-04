@@ -1,3 +1,7 @@
+# 3.6.0
+## New
+* Airflow step.
+
 # 3.5.0
 ## New
 * Email send/receive step.

@@ -10,6 +10,7 @@ Subpackages
     catcher_modules.database
     catcher_modules.mq
     catcher_modules.service
+    catcher_modules.pipeline
 
 Module contents
 ---------------
