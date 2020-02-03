@@ -1,8 +1,6 @@
 import os
 from os.path import join
 
-import pytest
-
 from test.abs_test_class import TestClass
 
 from catcher.core.runner import Runner
@@ -47,10 +45,12 @@ class DockerTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
-    # TODO create new test for travis
-    @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", reason="Failing in travis")
     def test_start_detached(self):
         self.populate_file('main.yaml', '''---
+                            variables:
+                                body:
+                                    httpRequest: {'path': '/some/path'}
+                                    httpResponse: {'body': 'hello world'}
                             steps:
                                 - docker: 
                                     start: 
@@ -68,9 +68,7 @@ class DockerTest(TestClass):
                                         - http:
                                             put:
                                                 url: 'http://localhost:8001/mockserver/expectation'
-                                                body:
-                                                    httpRequest: {'path': '/some/path'}
-                                                    httpResponse: {'body': 'hello world'}
+                                                body: '{{ body |tojson }}'
                                                 response_code: 201
                                 - http:
                                     get:
@@ -153,10 +151,12 @@ class DockerTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
-    # TODO create new test for travis
-    @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", reason="Failing in travis")
     def test_connect_disconnect(self):
         self.populate_file('main.yaml', '''---
+                            variables:
+                                body:
+                                    httpRequest: {'path': '/some/path'}
+                                    httpResponse: {'body': 'hello world'}
                             steps:
                                 - docker: 
                                     start: 
@@ -170,9 +170,7 @@ class DockerTest(TestClass):
                                         - http:
                                             put:
                                                 url: 'http://localhost:8000/mockserver/expectation'
-                                                body:
-                                                    httpRequest: {'path': '/some/path'}
-                                                    httpResponse: {'body': 'hello world'}
+                                                body: '{{ body | tojson }}'
                                                 response_code: 201
                                 - http:
                                     get:
