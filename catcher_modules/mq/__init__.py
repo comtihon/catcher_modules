@@ -4,6 +4,7 @@ from catcher.utils.file_utils import read_file
 from catcher.utils.misc import fill_template_str
 
 logging.getLogger("pykafka").setLevel(logging.WARNING)
+logging.getLogger("pika").setLevel(logging.WARNING)
 
 
 class MqStepMixin:

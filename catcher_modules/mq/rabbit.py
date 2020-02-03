@@ -7,8 +7,6 @@ import logging
 
 from catcher_modules.mq import MqStepMixin
 
-logging.getLogger("pika").setLevel(logging.WARN)
-
 
 class Rabbit(ExternalStep, MqStepMixin):
     """
