@@ -3,7 +3,6 @@ from catcher.steps.step import Step, update_variables
 from catcher.utils.logger import warning
 from catcher.utils.misc import try_get_object, fill_template_str, try_get_objects, fill_template
 import ssl
-import logging
 
 from catcher_modules.mq import MqStepMixin
 
@@ -21,7 +20,8 @@ class Rabbit(ExternalStep, MqStepMixin):
     - sslOptions: {'ssl_version': 'PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2', 'ca_certs': '/path/to/ca_cert', 'keyfile': '/path/to/key', 'certfile': '/path/to/cert'. 'cert_reqs': 'CERT_NONE, CERT_OPTIONAL or CERT_REQUIRED'} 
                   Optional object to be used only when ssl is required. 
                   If an empty object is passed ssl_version defaults to PROTOCOL_TLSv1_2 and cert_reqs defaults to CERT_NONE
-    - disconnect_timeout: number of seconds to wait for a disconnect before force closing the connection.
+    - disconnect_timeout: number of seconds to wait for a disconnect before force closing the connection. Warning! Publish
+                          may fail if you use to small timeout value.
 
     :consume:  Consume message from rabbit.
 
