@@ -200,7 +200,7 @@ class SqlAlchemyDb:
         table = self.__automap_table(table_name, engine)
         csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
-        db_generator = generator_utils.table_to_generator(table, engine)
+        db_generator = generator_utils.table_to_generator(table_name, engine)
         sentinel = EmptyRow()
         res = all(self.compare_result_set(keys, a, b)
                   for a, b in zip_longest(csv_generator, db_generator, fillvalue=sentinel))
