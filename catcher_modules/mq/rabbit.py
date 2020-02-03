@@ -1,5 +1,6 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
+from catcher.utils.logger import warning
 from catcher.utils.misc import try_get_object, fill_template_str, try_get_objects, fill_template
 import ssl
 import logging
@@ -22,6 +23,7 @@ class Rabbit(ExternalStep, MqStepMixin):
     - sslOptions: {'ssl_version': 'PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2', 'ca_certs': '/path/to/ca_cert', 'keyfile': '/path/to/key', 'certfile': '/path/to/cert'. 'cert_reqs': 'CERT_NONE, CERT_OPTIONAL or CERT_REQUIRED'} 
                   Optional object to be used only when ssl is required. 
                   If an empty object is passed ssl_version defaults to PROTOCOL_TLSv1_2 and cert_reqs defaults to CERT_NONE
+    - disconnect_timeout: number of seconds to wait for a disconnect before force closing the connection.
 
     :consume:  Consume message from rabbit.
 
@@ -109,7 +111,7 @@ class Rabbit(ExternalStep, MqStepMixin):
         config = try_get_objects(fill_template_str(self.config, variables))
         if config.get('virtualhost') is None:
             config['virtualhost'] = ''
-
+        disconnect_timeout = int(config.get('disconnect_timeout', 10))  # 10 sec for connection closed exception
         connection_parameters = self._get_connection_parameters(config)
 
         if self.method == 'publish':
@@ -118,24 +120,33 @@ class Rabbit(ExternalStep, MqStepMixin):
                                            fill_template_str(self.exchange, variables),
                                            fill_template_str(self.routing_key, variables),
                                            fill_template(self.headers, variables),
-                                           message)
+                                           message,
+                                           disconnect_timeout)
         elif self.method == 'consume':
-            return variables, self.consume(connection_parameters, fill_template_str(self.queue, variables))
+            return variables, self.consume(connection_parameters,
+                                           fill_template_str(self.queue, variables),
+                                           disconnect_timeout)
         else:
             raise AttributeError('unknown method: ' + self.method)
 
     @staticmethod
-    def publish(connection_parameters, exchange, routing_key, headers, message):
+    def publish(connection_parameters, exchange, routing_key, headers, message, disconnect_timeout):
         import pika
+        from pika import exceptions
         properties = pika.BasicProperties(headers=headers)
-        with pika.BlockingConnection(connection_parameters) as connection:
-            channel = connection.channel()
-            channel.basic_publish(exchange=exchange, routing_key=routing_key, properties=properties, body=message)
+        try:
+            connection_parameters.blocked_connection_timeout = disconnect_timeout
+            with pika.BlockingConnection(connection_parameters) as connection:
+                channel = connection.channel()
+                channel.basic_publish(exchange=exchange, routing_key=routing_key, properties=properties, body=message)
+        except exceptions.ConnectionClosed:
+            warning('Failed to gracefully close rabbit connection.')
 
     @staticmethod
-    def consume(connection_parameters, queue):
+    def consume(connection_parameters, queue, disconnect_timeout):
         message = None
         import pika
+        connection_parameters.blocked_connection_timeout = disconnect_timeout
         with pika.BlockingConnection(connection_parameters) as connection:
             channel = connection.channel()
             method_frame, header_frame, body = channel.basic_get(queue)
