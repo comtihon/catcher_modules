@@ -1,16 +1,16 @@
 import csv
 import json
 import os
-from io import StringIO
 from abc import abstractmethod
+from io import StringIO
 from itertools import zip_longest
 from typing import List
 
 from catcher.utils.logger import debug
 from catcher.utils.misc import fill_template_str
 
-from catcher_modules.utils import generator_utils
 from catcher_modules.utils import db_utils
+from catcher_modules.utils import generator_utils
 
 
 class EmptyRow:
@@ -71,12 +71,12 @@ class SqlAlchemyDb:
         """
         resources = variables['RESOURCES_DIR']
         if schema is not None:
-            with open(resources + '/' + schema) as fd:
+            with open(os.path.join(resources, schema)) as fd:
                 ddl_sql = fd.read()
                 self.__execute(conf, ddl_sql)
         if data is not None and data:
             for table_name, path_to_csv in data.items():
-                self.__populate_csv(conf, table_name, resources + '/' + path_to_csv, variables)
+                self.__populate_csv(conf, table_name, os.path.join(resources, path_to_csv), variables)
 
     def expect(self, variables, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
         """
