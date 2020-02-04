@@ -69,11 +69,11 @@ class DockerTest(TestClass):
                                             put:
                                                 url: 'http://localhost:8001/mockserver/expectation'
                                                 body: '{{ body |tojson }}'
-                                                response_code: 200
+                                                response_code: 2xx
                                 - http:
                                     get:
                                         url: 'http://localhost:8001/some/path'
-                                        response_code: 200
+                                        response_code: 2xx
                                     register: {reply: '{{ OUTPUT }}'}
                                 - check:
                                     equals: {the: '{{ reply }}', is: 'hello world'}
@@ -171,11 +171,11 @@ class DockerTest(TestClass):
                                             put:
                                                 url: 'http://localhost:8000/mockserver/expectation'
                                                 body: '{{ body | tojson }}'
-                                                response_code: 200
+                                                response_code: 2xx
                                 - http:
                                     get:
                                         url: 'http://localhost:8000/some/path'
-                                        response_code: 200
+                                        response_code: 2xx
                                 - docker:
                                     disconnect:
                                         hash: '{{ hash }}'
@@ -189,7 +189,7 @@ class DockerTest(TestClass):
                                 - http:
                                     get:
                                         url: 'http://localhost:8000/some/path'
-                                        response_code: 200
+                                        response_code: 2xx
                                 - docker:
                                     stop:
                                         hash: '{{ hash }}'            
