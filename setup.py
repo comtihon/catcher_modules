@@ -26,6 +26,8 @@ def extras() -> dict:
         'email': ["imbox==0.9.*"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
+    # don't try to install couchbase in travis
+    modules['travis'] = [m for m in modules['all'] if not m.startswith('couchbase')]
     return modules
 
 

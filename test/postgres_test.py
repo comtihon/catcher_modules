@@ -1,3 +1,6 @@
+from catcher.utils.file_utils import ensure_empty
+
+import test
 from os.path import join
 
 import psycopg2
@@ -20,11 +23,12 @@ class PostgresTest(TestClass):
 
     def setUp(self):
         super().setUp()
+        ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
         with self.connection as conn:
             cur = conn.cursor()
-            cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer);")
-            cur.execute("insert into test(id, num) values(1, 1);")
-            cur.execute("insert into test(id, num) values(2, 2);")
+            cur.execute("CREATE TABLE if not exists test (id serial PRIMARY KEY, num integer);")
+            cur.execute("insert into test(id, num) values(1, 1) on conflict do nothing;")
+            cur.execute("insert into test(id, num) values(2, 2) on conflict do nothing;")
             conn.commit()
             cur.close()
 
@@ -33,6 +37,7 @@ class PostgresTest(TestClass):
         with self.connection as conn:
             cur = conn.cursor()
             cur.execute("DROP TABLE test;")
+            cur.execute("DROP TABLE IF exists foo;")
             conn.commit()
             cur.close()
 
@@ -108,6 +113,26 @@ class PostgresTest(TestClass):
                               register: {document: '{{ OUTPUT }}'}
                    - check: 
                         equals: {the: '{{ document[1] }}', is: '{{ num }}'} 
+                ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_read_date(self):
+        with self.connection as conn:
+            cur = conn.cursor()
+            cur.execute("CREATE TABLE if not exists foo (id serial PRIMARY KEY, payload json);")
+            cur.execute("insert into foo values(1, '{ \"date\": \"1973-12-15\"}') on conflict do nothing;")
+
+        self.populate_file('main.yaml', '''---
+                variables:
+                    pg_conf: 'test:test@localhost:5433/test'
+                steps:
+                    - postgres:
+                         request:
+                             conf: '{{ pg_conf }}'
+                             query: "select payload ->> 'date' AS date from foo where id = 1"
+                         register: {date: '{{ OUTPUT }}' }
+                    - check: {equals: {the: '1973-12-15', is: '{{ date }}'}}
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())

@@ -7,7 +7,7 @@ from itertools import zip_longest
 from typing import List
 
 from catcher.utils.logger import debug
-from catcher.utils.misc import fill_template_str
+from catcher.utils.misc import fill_template_str, try_get_objects
 
 from catcher_modules.utils import db_utils
 from catcher_modules.utils import generator_utils
@@ -34,7 +34,7 @@ class SqlAlchemyDb:
         query = in_data['query']
         return self.__execute(conf, query)
 
-    def populate(self, variables, conf=None, schema=None, data: dict = None, **kwargs):
+    def populate(self, variables, conf=None, schema=None, data: dict = None, use_json=False, **kwargs):
         """
         :Input:  Populate database with prepared scripts (DDL or CSV with data).
 
@@ -52,6 +52,8 @@ class SqlAlchemyDb:
 
         :data: dictionary with keys = tables and values - paths to csv files with data. *Optional*
 
+        :use_json: try to recognize json strings and convert them to json. *Optional*, default is false.
+
         :F.e.:
         populate postgres
         ::
@@ -67,6 +69,7 @@ class SqlAlchemyDb:
                             conf: {{ pg_conf }}
                             schema: {{ pg_schema }}
                             data: {{ pg_data }}
+                            use_json: true
 
         """
         resources = variables['RESOURCES_DIR']
@@ -76,7 +79,7 @@ class SqlAlchemyDb:
                 self.__execute(conf, ddl_sql)
         if data is not None and data:
             for table_name, path_to_csv in data.items():
-                self.__populate_csv(conf, table_name, os.path.join(resources, path_to_csv), variables)
+                self.__populate_csv(conf, table_name, os.path.join(resources, path_to_csv), variables, use_json)
 
     def expect(self, variables, conf=None, schema=None, data: dict = None, strict=False, **kwargs):
         """
@@ -146,7 +149,7 @@ class SqlAlchemyDb:
                 else:
                     self._check_data(conf, table_name, csv_stream)
 
-    def __populate_csv(self, conf, table_name, path_to_csv, variables):
+    def __populate_csv(self, conf, table_name, path_to_csv, variables, use_json):
         csv_reader = csv.reader(self.__read_n_fill_csv(path_to_csv, variables), delimiter=',')
         line_count = 0
         engine = db_utils.get_engine(conf, self.driver)
@@ -160,6 +163,8 @@ class SqlAlchemyDb:
                 names = row
                 line_count += 1
             else:
+                if use_json:
+                    row = [try_get_objects(r) for r in row]
                 session.add(row_table(**dict(zip(names, row))))
         session.commit()
 
@@ -195,7 +200,7 @@ class SqlAlchemyDb:
         table = self.__automap_table(table_name, engine)
         csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
-        db_generator = generator_utils.table_to_generator(table, engine)
+        db_generator = generator_utils.table_to_generator(table_name, engine)
         sentinel = EmptyRow()
         res = all(self.compare_result_set(keys, a, b)
                   for a, b in zip_longest(csv_generator, db_generator, fillvalue=sentinel))

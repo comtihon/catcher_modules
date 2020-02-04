@@ -192,3 +192,36 @@ class PrepareTest(TestClass):
         self.assertEqual('test_2', response[1][1])
         self.assertEqual('test_3', response[2][1])
         self.assertEqual('other_email', response[3][1])
+
+    def test_prepare_json(self):
+        self.populate_file('resources/pg_schema.sql', '''
+                CREATE TABLE foo(
+                    user_id      integer    primary key,
+                    payload      json       NOT NULL
+                );
+                ''')
+        self.populate_file('resources/foo.csv', "user_id,payload\n"
+                                                "1,{\"date\": \"1990-07-20\"}"
+                           )
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        postgres: 'test:test@localhost:5433/test'
+                        users: ['test_1', 'test_2', 'test_3']
+                    steps:
+                        - prepare:
+                            populate:
+                                postgres:
+                                    conf: '{{ postgres }}'
+                                    schema: pg_schema.sql
+                                    data:
+                                        foo: foo.csv
+                                    use_json: true
+                        - postgres:
+                            request:
+                                conf: '{{ postgres }}'
+                                query: "select payload ->> 'date' AS date from foo where user_id = 1"
+                            register: {date: '{{ OUTPUT }}' }
+                        - check: {equals: {the: '1990-07-20', is: '{{ date }}'}}
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
