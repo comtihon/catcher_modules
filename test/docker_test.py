@@ -69,7 +69,7 @@ class DockerTest(TestClass):
                                             put:
                                                 url: 'http://localhost:8001/mockserver/expectation'
                                                 body: '{{ body |tojson }}'
-                                                response_code: 201
+                                                response_code: 200
                                 - http:
                                     get:
                                         url: 'http://localhost:8001/some/path'
@@ -171,7 +171,7 @@ class DockerTest(TestClass):
                                             put:
                                                 url: 'http://localhost:8000/mockserver/expectation'
                                                 body: '{{ body | tojson }}'
-                                                response_code: 201
+                                                response_code: 200
                                 - http:
                                     get:
                                         url: 'http://localhost:8000/some/path'
