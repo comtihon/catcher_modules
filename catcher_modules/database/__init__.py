@@ -227,7 +227,7 @@ class SqlAlchemyDb:
     @classmethod
     def __read_n_fill_csv(cls, csv_path, variables):
         with open(csv_path) as csv_file:
-            csv_content = fill_template_str(csv_file.read(), variables)
+            csv_content = fill_template_str(csv_file.read(), variables).replace('\n\n', '\n')
         return StringIO(csv_content)
 
     @staticmethod
