@@ -1,10 +1,11 @@
 from os.path import join
 
 import pymysql
-import test
+import pytest
 from catcher.core.runner import Runner
 from catcher.utils.file_utils import ensure_empty
 
+import test
 from test.abs_test_class import TestClass
 
 
@@ -155,6 +156,31 @@ class MySqlTest(TestClass):
         self.assertEqual(2, response[1][0])
         self.assertEqual('test2@test.com', response[1][1])
 
+    # TODO fixme. https://stackoverflow.com/questions/60138719/multiple-queries-with-mysqlpymysql
+    @pytest.mark.skip(reason="Need fix for implementation")
+    def test_populate_multiple_ddl(self):
+        self.populate_file('resources/schema.sql', '''
+                                        CREATE TABLE if not exists foo(
+                                            user_id      integer    primary key,
+                                            email        varchar(36)    NOT NULL
+                                        );
+                                        insert into foo values (1, \'test1@test.org\');
+                                        truncate table foo;
+                                        insert into foo values (2, \'test2@test.org\');
+                                        ''')
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                mysql:
+                                                    conf: 'root:test@localhost:3307/test'
+                                                    schema: schema.sql
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual([(2, 'test2@test.org')], response)
+
     def test_expect_strict(self):
         self.populate_schema_file()
         self.populate_data_file()
@@ -209,4 +235,3 @@ class MySqlTest(TestClass):
         cur.close()
         conn.close()
         return response
-

@@ -8,7 +8,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  mysql configuration. Can be a single line string or object. **Required**.
+    :conf:  mysql configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
 
     - dbname: name of the database to connect to
     - user: database user
@@ -39,7 +39,14 @@ class MySql(ExternalStep, SqlAlchemyDb):
     ::
         mysql:
           request:
-              conf: 'user:password@localhost:5432/test'
+              conf: 'user:password@localhost:3306/test'
+              query: 'insert into test(id, num) values(3, 3);'
+
+    Insert into test, using string configuration with dialect
+    ::
+        mysql:
+          request:
+              conf: 'mysql+pymysql://user:password@localhost:3306/test'
               query: 'insert into test(id, num) values(3, 3);'
 
       """

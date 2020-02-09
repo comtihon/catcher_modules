@@ -8,7 +8,7 @@ class Postgres(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  postgres configuration. Can be a single line string or object. **Required**.
+    :conf:  postgres configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
 
     - dbname: name of the database to connect to
     - user: database user
@@ -38,6 +38,14 @@ class Postgres(ExternalStep, SqlAlchemyDb):
           request:
               conf: 'user:password@localhost:5432/test'
               query: 'insert into test(id, num) values(3, 3);'
+
+    Insert into test, using string configuration with dialect
+    ::
+        postgres:
+          request:
+              conf: 'postgresql://user:password@localhost:5432/test'
+              query: 'insert into test(id, num) values(3, 3);'
+
 
       """
 

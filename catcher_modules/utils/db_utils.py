@@ -17,7 +17,7 @@ def get_engine(conf: Union[str, dict], driver: str = 'postgresql'):
                                                 conf.get('port', default_ports.get(driver.lower(), '')),
                                                 conf['dbname'])
     else:
-        conf_str = driver + '://' + conf
+        conf_str = driver + '://' + conf if '://' not in conf else conf
 
     from sqlalchemy import create_engine
     return create_engine(conf_str)

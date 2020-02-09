@@ -120,18 +120,20 @@ class Airflow(ExternalStep):
         method = Step.filter_predefined_keys(body)  # run/run_status
         oper = body[method]
         if method == 'run':
-            return variables, self._run_dag(oper)
+            return variables, self._run_dag(oper, variables.get('INVENTORY_FILE'))
         if method == 'run_status':
             return variables, self._run_status(oper)
         if method == 'get_xcom':
             return variables, self._get_xcom(oper)
         raise Exception('Unknown method: {}'.format(method))
 
-    def _run_dag(self, oper):
+    def _run_dag(self, oper, inventory):
         dag_id = oper['dag_id']
         config = oper['config']
         url = config['url']
         airflow_client.unpause_dag(url, dag_id)
+        if inventory is not None:  # fill connections from inventory to airflow
+            airflow_db_client.fill_connections(inventory, config['db_conf'], config.get('backend', 'postgresql'))
         dag_config = oper.get('dag_config', {})
         run_id = airflow_client.trigger_dag(url, dag_id, dag_config)
         sync = oper.get('sync', False)

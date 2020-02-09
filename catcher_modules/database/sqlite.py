@@ -8,7 +8,7 @@ class SQLite(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  sqlite path string. **Required**.
+    :conf:  sqlite path string. Dialect is not mandatory. **Required**.
     :query: query to run. **Required**
 
     :Examples:
