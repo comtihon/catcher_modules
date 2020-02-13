@@ -75,7 +75,7 @@ class SqlAlchemyDb:
         resources = variables['RESOURCES_DIR']
         if schema is not None:
             with open(os.path.join(resources, schema)) as fd:
-                ddl_sql = fd.read()
+                ddl_sql = fill_template_str(fd.read(), variables)
                 self.__execute(conf, ddl_sql)
         if data is not None and data:
             for table_name, path_to_csv in data.items():
