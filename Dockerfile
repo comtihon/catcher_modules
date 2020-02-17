@@ -1,4 +1,4 @@
-FROM catcher:latest
+FROM comtihon/catcher_base:latest
 
 WORKDIR /catcher_modules
 COPY catcher_modules catcher_modules
