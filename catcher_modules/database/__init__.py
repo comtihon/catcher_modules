@@ -171,6 +171,7 @@ class SqlAlchemyDb:
         session.commit()
 
     def __check_schema(self, conf, schema_file):
+        # TODO implement me
         with open(schema_file) as fd:
             data = json.load(fd)
             for table, meta in data.items():
@@ -199,7 +200,6 @@ class SqlAlchemyDb:
 
     def _check_data_strict(self, conf, table_name, csv_stream):
         engine = db_utils.get_engine(conf, self.driver)
-        table = self.__automap_table(table_name, engine)
         csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
         db_generator = generator_utils.table_to_generator(table_name, engine)

@@ -2,6 +2,7 @@ import json
 
 from catcher.utils import file_utils
 from catcher.utils.logger import debug
+
 from catcher_modules.utils import db_utils
 
 
@@ -38,12 +39,38 @@ def get_xcom(task_id, execution_time, conf, driver):
         return [dict(r) for r in result.fetchall()][0]
 
 
-def fill_connections(inventory, conf, driver):
+def check_dag_exists(dag_id, conf, driver) -> bool:
+    """
+    Check if dag exists in airflow
+    """
+    engine = db_utils.get_engine(conf, driver)
+    with engine.connect() as connection:
+        result = connection.execute('''select * from dag 
+                                           where dag_id = '{}'
+                                        '''.format(dag_id))
+        found = [dict(r) for r in result.fetchall()]
+        return found != []
+
+
+def check_import_errors(dag_id, conf, driver):
+    """
+    Check if there was import error for the dag
+    """
+    engine = db_utils.get_engine(conf, driver)
+    with engine.connect() as connection:
+        result = connection.execute('''select * from import_error 
+                                               where filename like '%%{}%%'
+                                            '''.format(dag_id))
+        return [dict(r)['stacktrace'] for r in result.fetchall()]
+
+
+def fill_connections(inventory, conf, driver, fernet_key):
     """
     Populate airflow connections based on catcher's inventory file
     :param inventory: path to inventory file
     :param conf: db configuration
     :param driver: dialect
+    :param fernet_key: is used in passwords encryption
     :return:
     """
     inv_dict = file_utils.read_source_file(inventory)
@@ -54,7 +81,7 @@ def fill_connections(inventory, conf, driver):
                 if _check_conn_id_exists(name, connection):
                     raise Exception('Already exists')
                 if isinstance(value, str):  # conn_id: 'drivername://username:password@host:port/database'
-                    connection.execute(_prepare_url(name, value))
+                    connection.execute(_prepare_url(name, value, fernet_key))
                 else:  # conn_id: extras object (aws)
                     connection.execute(_prepare_extras(name, value))
                 debug('{} added'.format(name))
@@ -77,13 +104,19 @@ def _check_conn_id_exists(conn_id, connection) -> bool:
     return result != [(0,)]
 
 
-def _prepare_url(name, value) -> str:
+def _prepare_url(name, value, fernet_key) -> str:
     from sqlalchemy.engine.url import make_url
+    from cryptography.fernet import Fernet
+    f = Fernet(fernet_key.encode())
     url = make_url(value)
+    if url.password_original is not None:
+        password = f.encrypt(url.password_original.encode()).decode()
+    else:
+        password = None
     return '''insert into connection(conn_id,conn_type,host,schema,login,password,port)
                          values('{}','{}','{}','{}','{}','{}',{})'''.format(name, url.drivername.split('+')[0],
                                                                             url.host, 'default', url.username,
-                                                                            url.password_original, url.port)
+                                                                            password, url.port)
 
 
 def _prepare_extras(name, value) -> str:
