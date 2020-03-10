@@ -47,7 +47,7 @@ class Marketo(ExternalStep):
     ::
 
         marketo:
-            read:
+            write:
                 conf:
                     munchkin_id: '{{ marketo_munchkin_id }}'
                     client_id: '{{ marketo_client_id }}'
@@ -93,12 +93,12 @@ class Marketo(ExternalStep):
         from marketorestpython.client import MarketoClient
         mc = MarketoClient(config['munchkin_id'], config['client_id'], config['client_secret'], None, None)
         leads = self._get_fields_as_templates(step['leads'], variables)
-        mc.execute(method='create_update_leads',
-                   leads=leads,
-                   action=step['action'],
-                   lookupField=step.get('lookupField', 'email'),
-                   asyncProcessing='false',
-                   partitionName='Default')
+        return mc.execute(method='create_update_leads',
+                          leads=leads,
+                          action=step['action'],
+                          lookupField=fill_template_str(step.get('lookupField', 'email'), variables),
+                          asyncProcessing='false',
+                          partitionName='Default')
 
     @staticmethod
     def _get_fields_as_templates(field, variables):
