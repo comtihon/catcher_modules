@@ -1,3 +1,7 @@
+# 3.7.0
+## New
+* Marketo step.
+
 # 3.6.0
 ## New
 * Airflow step.
