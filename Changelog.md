@@ -1,3 +1,8 @@
+# 4.0.0
+## Incompatible changes:
+* every step based on sqlalchemy return value is now dict, where keys are column names got from the database. In case of 
+write operations rowcount is returned.
+
 # 3.7.0
 ## New
 * Marketo step.

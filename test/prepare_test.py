@@ -220,7 +220,7 @@ class PrepareTest(TestClass):
                             request:
                                 conf: '{{ postgres }}'
                                 query: "select payload ->> 'date' AS date from foo where user_id = 1"
-                            register: {date: '{{ OUTPUT }}' }
+                            register: {date: '{{ OUTPUT.date }}' }
                         - check: {equals: {the: '1990-07-20', is: '{{ date }}'}}
                     ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)

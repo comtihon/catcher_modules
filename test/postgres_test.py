@@ -59,7 +59,7 @@ class PostgresTest(TestClass):
                         query: 'select count(*) from test'
                     register: {documents: '{{ OUTPUT }}'}
                 - check:
-                    equals: {the: '{{ documents }}', is: 2}
+                    equals: {the: '{{ documents.count }}', is: 2}
             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
@@ -77,7 +77,7 @@ class PostgresTest(TestClass):
                             query: 'select count(*) from test'
                         register: {documents: '{{ OUTPUT }}'}
                     - check:
-                        equals: {the: '{{ documents }}', is: 2}
+                        equals: {the: '{{ documents.count }}', is: 2}
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
@@ -99,9 +99,9 @@ class PostgresTest(TestClass):
         self.populate_file('main.yaml', '''---
                 variables:
                     pg_conf: 'test:test@localhost:5433/test'
+                    num: '{{ RANDOM_INT }}'
+                    id: '{{ RANDOM_INT }}'
                 steps:
-                   - echo: {from: '{{ RANDOM_INT }}', register: {num: '{{ OUTPUT }}'}} 
-                   - echo: {from: '{{ RANDOM_INT }}', register: {id: '{{ OUTPUT }}'}} 
                    - postgres:
                         actions: 
                             - request:
@@ -112,7 +112,7 @@ class PostgresTest(TestClass):
                                 query: select * from test where id={{ id }}
                               register: {document: '{{ OUTPUT }}'}
                    - check: 
-                        equals: {the: '{{ document[1] }}', is: '{{ num }}'} 
+                        equals: {the: '{{ document.id }}', is: '{{ num }}'} 
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
@@ -132,7 +132,7 @@ class PostgresTest(TestClass):
                              conf: '{{ pg_conf }}'
                              query: "select payload ->> 'date' AS date from foo where id = 1"
                          register: {date: '{{ OUTPUT }}' }
-                    - check: {equals: {the: '1973-12-15', is: '{{ date }}'}}
+                    - check: {equals: {the: '1973-12-15', is: '{{ date.date }}'}}
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())

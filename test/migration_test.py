@@ -51,7 +51,7 @@ class Migration(TestClass):
                     request:
                         conf: '{{ postgres }}'
                         query: "select count(*) from migration where hash = '{{ hash }}';"
-                    register: {result: '{{ OUTPUT }}'}
+                    register: {result: '{{ OUTPUT.count }}'}
                 - stop: 
                     if: 
                         equals: {the: '{{ result }}', is: 1}
@@ -103,7 +103,7 @@ class Migration(TestClass):
                 request:
                     conf: '{{ postgres }}'
                     query: "select count(*) from migration where hash = '{{ TEST_NAME }}';"
-                register: {result: '{{ OUTPUT }}'}
+                register: {result: '{{ OUTPUT.count }}'}
                 tag: check
                 name: 'check_migration_{{ TEST_NAME }}'
             - stop: 

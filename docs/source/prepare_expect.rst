@@ -114,14 +114,14 @@ You have to check the database manually::
             request:
                 conf: '{{ postgres }}'
                 query: 'select count(*) from foo'
-            register: {documents: '{{ OUTPUT }}'}
+            register: {documents: '{{ OUTPUT.count }}'}
         - check:
             equals: {the: '{{ documents }}', is: 2}
         - postgres:
             request:
                 conf: '{{ postgres }}'
                 query: 'select count(*) from bar'
-            register: {documents: '{{ OUTPUT }}'}
+            register: {documents: '{{ OUTPUT.count }}'}
         - check:
             equals: {the: '{{ documents }}', is: 2}
 
