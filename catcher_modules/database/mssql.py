@@ -29,8 +29,12 @@ class MSSql(ExternalStep, SqlAlchemyDb):
                   password: password
                   host: localhost
                   port: 1433
-              query: 'select count(*) from test'
+              query: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
+
+    **Note** that we alias count. For some reason sqlalchemy for mssql will return `count(*)` as a column name
+    instead of `count`.
+
 
     Insert into test, using string configuration
     ::

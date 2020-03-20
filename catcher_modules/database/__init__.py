@@ -210,8 +210,12 @@ class SqlAlchemyDb:
     def __execute(self, conf: str, query: str):
         engine = db_utils.get_engine(conf, self.driver)
         with engine.connect() as connection:
-            result = connection.execute(query)
-            return SqlAlchemyDb.gather_response(result)
+            res = connection.execute(query)
+            if res.returns_rows:
+                result = [dict(r) for r in res]
+                return result[0] if len(result) == 1 else result
+            else:
+                return res.rowcount
 
     @classmethod
     def __automap_table(cls, table_name: str, engine):
@@ -229,19 +233,6 @@ class SqlAlchemyDb:
         with open(csv_path) as csv_file:
             csv_content = fill_template_str(csv_file.read(), variables).replace('\n\n', '\n')
         return StringIO(csv_content)
-
-    @staticmethod
-    def gather_response(cursor):
-        try:
-            response = cursor.fetchall()
-            if len(response) == 1:  # for only one value select * from .. where id = 1 -> [('a', 1, 2)]
-                response = response[0]
-                if len(response) == 1:  # for only one value select count(*) from ... -> (2,)
-                    response = response[0]
-            return response
-        except Exception as e:
-            debug('Execution error {}'.format(e))
-            return None
 
     @staticmethod
     def compare_result_set(keys: List[str], values: List[str], db_row):

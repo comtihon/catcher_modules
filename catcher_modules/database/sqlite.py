@@ -18,8 +18,11 @@ class SQLite(ExternalStep, SqlAlchemyDb):
         sqlite:
           request:
               conf: '/foo.db'
-              query: 'select count(*) from test'
+              query: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
+
+    **Note** that we alias count. For some reason sqlalchemy for sqlite will return `count(*)` as a column name
+    instead of `count`.
 
     Insert into test, using string absolute path (with 2 slashes)
         mssql:

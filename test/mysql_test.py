@@ -62,8 +62,8 @@ class MySqlTest(TestClass):
                 - mysql:
                     request:
                         conf: '{{ mysql }}'
-                        query: 'select count(*) from test'
-                    register: {documents: '{{ OUTPUT }}'}
+                        query: 'select count(*) as count from test'
+                    register: {documents: '{{ OUTPUT.count }}'}
                 - check:
                     equals: {the: '{{ documents }}', is: 2}
             ''')
@@ -80,8 +80,8 @@ class MySqlTest(TestClass):
                     - mysql:
                         request:
                             conf: '{{ mssql }}'
-                            query: 'select count(*) from test'
-                        register: {documents: '{{ OUTPUT }}'}
+                            query: 'select count(*) as count from test'
+                        register: {documents: '{{ OUTPUT.count }}'}
                     - check:
                         equals: {the: '{{ documents }}', is: 2}
                 ''')
@@ -116,9 +116,9 @@ class MySqlTest(TestClass):
                             - request:
                                 conf: '{{ db_conf }}'
                                 query: select * from test where id={{ id }}
-                              register: {document: '{{ OUTPUT }}'}
+                              register: {document: '{{ OUTPUT.num }}'}
                    - check: 
-                        equals: {the: '{{ document[1] }}', is: '{{ num }}'} 
+                        equals: {the: '{{ document }}', is: '{{ num }}'} 
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
