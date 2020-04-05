@@ -6,7 +6,7 @@ COPY requirements.txt requirements.txt
 COPY setup.py setup.py
 
 RUN apk update \
-  && apk add gcc musl-dev postgresql-dev libcouchbase-dev freetds-dev \
+  && apk add gcc musl-dev postgresql-dev libcouchbase-dev freetds-dev libffi-dev mariadb-connector-c-dev \
   && pip install Cython
 
 RUN pip install -e "file://`pwd`#egg=catcher-modules[all]"
