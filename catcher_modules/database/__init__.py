@@ -221,8 +221,13 @@ class SqlAlchemyDb:
     def __automap_table(cls, table_name: str, engine):
         from sqlalchemy.ext.automap import automap_base
 
+        schema = None
+        if '.' in table_name:
+            [schema, table_name] = table_name.split('.')
+
+        debug('Mapping {}. It can take a while'.format(table_name))
         Base = automap_base()
-        Base.prepare(engine, reflect=True)
+        Base.prepare(engine, reflect=True, schema=schema)
         try:
             return Base.classes[table_name]
         except KeyError:
