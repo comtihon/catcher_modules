@@ -163,7 +163,7 @@ class S3(ExternalStep):
 
         if len(files) > 1 or (len(files) == 1 and not path.endswith(files[0])):
             [self._delete(conf, join(bucket, file)) for file in files]  # delete files in directory
-
+        debug('Delete {}/{}'.format(bucket, filename))
         import boto3
         res = boto3.resource('s3',
                              endpoint_url=conf.get('url'),
