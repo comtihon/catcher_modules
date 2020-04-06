@@ -113,10 +113,14 @@ def _prepare_url(name, value, fernet_key) -> str:
         password = f.encrypt(url.password_original.encode()).decode()
     else:
         password = None
-    return '''insert into connection(conn_id,conn_type,host,schema,login,password,port)
-                         values('{}','{}','{}','{}','{}','{}',{})'''.format(name, url.drivername.split('+')[0],
-                                                                            url.host, 'default', url.username,
-                                                                            password, url.port)
+    return '''insert into connection(conn_id,conn_type,host,schema,login,password,port,is_encrypted)
+                         values('{}','{}','{}','{}','{}','{}',{},true)'''.format(name,
+                                                                                 url.drivername.split('+')[0],
+                                                                                 url.host,
+                                                                                 url.database or None,
+                                                                                 url.username,
+                                                                                 password,
+                                                                                 url.port)
 
 
 def _prepare_extras(name, value) -> str:

@@ -1,7 +1,9 @@
+from os.path import join
 from typing import List
 
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
+from catcher.utils.logger import debug
 
 
 class S3(ExternalStep):
@@ -19,7 +21,7 @@ class S3(ExternalStep):
 
     - config: s3 config object
     - path: path including the filename. First dir treats like a bucket.
-    F.e. /my_bucket/subdir/file or my_bucket/subfir/file
+            F.e. /my_bucket/subdir/file or my_bucket/subfir/file
     - content: file's content. *Optional*
     - content_resource: path to a file. *Optional*. Either `content` or `content_resource` must be set.
 
@@ -32,6 +34,14 @@ class S3(ExternalStep):
 
     - config: s3 config object
     - path: path to the directory being listed
+
+    :delete: Delete file or directory from S3
+
+    - config: s3 config object
+    - path: path to the deleted
+    - recursive: if path is directory and recursive is true - will delete directory with all content. *Optional*,
+                 default is false.
+
 
     :Examples:
 
@@ -61,6 +71,15 @@ class S3(ExternalStep):
                 path: /foo/bar/
             register: {files: '{{ OUTPUT }}'
 
+    Delete file
+    ::
+
+        s3:
+            delete:
+                config: '{{ s3_config }}'
+                path: '/remove/me'
+                recursive: true
+
     """
 
     @update_variables
@@ -78,9 +97,9 @@ class S3(ExternalStep):
                                  aws_secret_access_key=conf['secret_key'],
                                  region_name=conf.get('region')
                                  )
-
+        path = oper['path']
         if method == 'get':
-            return variables, self._get_file(s3_client, oper['path'])
+            return variables, self._get_file(s3_client, path)
         elif method == 'put':
             content = str(oper.get('content'))
             if not content:
@@ -88,14 +107,17 @@ class S3(ExternalStep):
                     raise ValueError('No content for s3 put')
                 with open(oper['content_resource'], 'r') as f:
                     content = f.read()
-            return variables, self._put_file(s3_client, oper['path'], content)
+            return variables, self._put_file(s3_client, path, content)
         elif method == 'list':
-            return variables, self._list_dir(conf, oper['path'])
+            return variables, self._list_dir(conf, path)
+        elif method == 'delete':
+            return variables, self._delete(conf, path)
         else:
             raise AttributeError('unknown method: ' + method)
 
     def _get_file(self, s3_client, path):
         bucket, filename = self._parse_path(path)
+        debug('Get {}/{}'.format(bucket, filename))
         response = s3_client.get_object(Bucket=bucket, Key=filename)
         # TODO check response
         return response['Body'].read().decode()
@@ -103,6 +125,7 @@ class S3(ExternalStep):
     def _put_file(self, s3_client, path, content, retry=True):
         from botocore.exceptions import ClientError
         bucket, filename = self._parse_path(path)
+        debug('Put {}/{}'.format(bucket, filename))
         try:
             res = s3_client.put_object(Bucket=bucket, Key=filename, Body=content)
             return self._check_response(res)
@@ -130,6 +153,27 @@ class S3(ExternalStep):
             if obj.key.startswith(rest):
                 data += [obj.key]
         return data
+
+    def _delete(self, conf: dict, path: str):
+        bucket, filename = self._parse_path(path)
+        try:
+            files = self._list_dir(conf, path)
+        except:
+            files = []
+
+        if len(files) > 1 or (len(files) == 1 and not path.endswith(files[0])):
+            [self._delete(conf, join(bucket, file)) for file in files]  # delete files in directory
+
+        import boto3
+        res = boto3.resource('s3',
+                             endpoint_url=conf.get('url'),
+                             aws_access_key_id=conf['key_id'],
+                             aws_secret_access_key=conf['secret_key'],
+                             region_name=conf.get('region')
+                             )
+        obj = res.Object(bucket, filename)
+        obj.delete()
+
 
     @staticmethod
     def _check_response(res):

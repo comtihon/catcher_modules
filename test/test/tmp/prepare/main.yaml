@@ -1,0 +1,23 @@
+---
+            variables:
+                db_conf: 'airflow:airflow@localhost:5433/airflow'
+                airflow: 'http://127.0.0.1:8080'
+            steps:
+                - airflow:
+                    run:
+                        config:
+                            db_conf: '{{ db_conf }}'
+                            url: '{{ airflow }}'
+                        dag_id: 'execute_batch'
+                        sync: true
+                        wait_timeout: 50
+                    register: {run_id: '{{ OUTPUT }}'}
+                - airflow:
+                    get_xcom:
+                        config:
+                            db_conf: '{{ db_conf }}'
+                            url: '{{ airflow }}'
+                        task_id: fill_data 
+                        run_id:  '{{ run_id }}'
+                    
+            

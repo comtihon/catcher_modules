@@ -2,7 +2,6 @@ from os.path import join
 
 import boto3
 from catcher.core.runner import Runner
-
 from test.abs_test_class import TestClass
 
 
@@ -157,3 +156,73 @@ class S3Test(TestClass):
             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_delete_file(self):
+        self.s3.create_bucket(Bucket='foo')
+        self.s3.put_object(Bucket='foo', Key='baz/bar/file.txt', Body='1234')
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        s3_config:
+                            url: http://127.0.0.1:9001
+                            key_id: minio
+                            secret_key: minio123
+                    steps:
+                        - s3:
+                            delete:
+                                config: '{{ s3_config }}'
+                                path: /foo/baz/bar/file.txt
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        try:
+            self.s3.get_object(Bucket='foo', Key='baz/bar/file.txt')
+            self.fail('Key must not exist')
+        except Exception as e:
+            self.assertTrue('NoSuchKey' in str(e))
+
+    def test_delete_empty_dir(self):
+        self.s3.create_bucket(Bucket='foo')
+        self.s3.put_object(Bucket='foo', Key='baz/bar/dir/', Body='')
+        self.populate_file('main.yaml', '''---
+                            variables:
+                                s3_config:
+                                    url: http://127.0.0.1:9001
+                                    key_id: minio
+                                    secret_key: minio123
+                            steps:
+                                - s3:
+                                    delete:
+                                        config: '{{ s3_config }}'
+                                        path: /foo/baz/bar/dir/
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        try:
+            self.s3.get_object(Bucket='foo', Key='baz/bar/dir/')
+            self.fail('Key must not exist')
+        except Exception as e:
+            self.assertTrue('NoSuchKey' in str(e))
+
+    def test_delete_dir_recursive(self):
+        self.s3.create_bucket(Bucket='foo')
+        self.s3.put_object(Bucket='foo', Key='baz/bar/dir/file1.txt', Body='test')
+        self.s3.put_object(Bucket='foo', Key='baz/bar/dir/dir2/file2.txt', Body='test2')
+        self.populate_file('main.yaml', '''---
+                                    variables:
+                                        s3_config:
+                                            url: http://127.0.0.1:9001
+                                            key_id: minio
+                                            secret_key: minio123
+                                    steps:
+                                        - s3:
+                                            delete:
+                                                config: '{{ s3_config }}'
+                                                path: /foo/baz/bar/dir/
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        try:
+            self.s3.get_object(Bucket='foo', Key='baz/bar/dir/')
+            self.fail('Key must not exist')
+        except Exception as e:
+            self.assertTrue('NoSuchKey' in str(e))
