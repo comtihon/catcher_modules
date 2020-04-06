@@ -1,6 +1,8 @@
 import csv
+import datetime
 import json
 import os
+import arrow
 from abc import abstractmethod
 from io import StringIO
 from itertools import zip_longest
@@ -165,7 +167,7 @@ class SqlAlchemyDb:
             else:
                 if use_json:
                     row = [try_get_objects(r) for r in row]
-                session.add(row_table(**dict(zip(names, row))))
+                session.add(self.__create_row(row_table, dict(zip(names, row))))
         session.commit()
 
     def __check_schema(self, conf, schema_file):
@@ -259,3 +261,19 @@ class SqlAlchemyDb:
                       + str(getattr(db_row, key)) + ', expect: ' + str(value))
                 return False
         return True
+
+    @staticmethod
+    def __create_row(row_table, raw_data: dict):
+        """
+        Need to check field types before creating a row.
+        """
+        for key, value in raw_data.items():
+            desired_type = getattr(row_table, key).property.columns[0].type.python_type
+            if not isinstance(value, desired_type):
+                if desired_type == datetime.datetime and value:
+                    raw_data[key] = arrow.get(value).datetime
+                elif desired_type == datetime.date and value:
+                    raw_data[key] = arrow.get(value).date
+                else:
+                    raw_data[key] = desired_type(value) if value else None
+        return row_table(**raw_data)
