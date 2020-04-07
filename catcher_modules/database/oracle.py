@@ -8,7 +8,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  oracle configuration. Can be a single line string or object. **Required**.
+    :conf:  oracle configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
 
     - dbname: name of the database to connect to
     - user: database user
@@ -36,7 +36,14 @@ class Oracle(ExternalStep, SqlAlchemyDb):
     ::
         oracle:
           request:
-              conf: 'user:password@localhost:5432/test'
+              conf: 'user:password@localhost:1521/test'
+              query: 'insert into test(id, num) values(3, 3);'
+
+    Insert into test, using string configuration with dialect
+    ::
+        oracle:
+          request:
+              conf: 'oracle+cx_oracle://user:password@localhost:1521/test'
               query: 'insert into test(id, num) values(3, 3);'
 
       """

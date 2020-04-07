@@ -23,7 +23,8 @@ def unpause_dag(aiflow_url, dag_id):
     url = posixpath.join(aiflow_url, 'api/experimental/dags/{}/paused/false'.format(dag_id))
     r = request('GET', url)
     if r.status_code != 200:
-        raise Exception('Can\'t unpause dag: {}'.format(r.json()))
+        debug(r.text)
+        raise Exception('Can\'t unpause dag: {}'.format(dag_id))
 
 
 def get_dag_run(aiflow_url: str, dag_id: str, run_id: str) -> dict:

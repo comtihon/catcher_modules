@@ -8,7 +8,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
     """
     :Input:
 
-    :conf:  mssql configuration. Can be a single line string or object. **Required**.
+    :conf:  mssql configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
 
     - dbname: name of the database to connect to
     - user: database user
@@ -41,6 +41,13 @@ class MSSql(ExternalStep, SqlAlchemyDb):
         mssql:
           request:
               conf: 'user:password@localhost:5432/test'
+              query: 'insert into test(id, num) values(3, 3);'
+
+    Insert into test, using string configuration with dialect
+    ::
+        mssql:
+          request:
+              conf: 'mssql+pymssql://user:password@localhost:5432/test'
               query: 'insert into test(id, num) values(3, 3);'
 
       """

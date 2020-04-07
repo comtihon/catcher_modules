@@ -1,3 +1,8 @@
+# 4.1.0
+## New
+* Airflow step
+* S3 step has now delete option.
+
 # 4.0.0
 ## Incompatible changes:
 * every step based on sqlalchemy return value is now dict, where keys are column names got from the database. In case of 

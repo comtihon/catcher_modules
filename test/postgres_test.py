@@ -82,6 +82,24 @@ class PostgresTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
 
+    def test_conf_with_dialect(self):
+        self.populate_file('test_inventory.yml', '''
+                postgres: 'postgresql://test:test@localhost:5433/test'
+                ''')
+
+        self.populate_file('main.yaml', '''---
+                        steps:
+                            - postgres:
+                                request:
+                                    conf: '{{ postgres }}'
+                                    query: 'select count(*) from test'
+                                register: {documents: '{{ OUTPUT }}'}
+                            - check:
+                                equals: {the: '{{ documents.count }}', is: 2}
+                        ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
+        self.assertTrue(runner.run_tests())
+
     def test_write_simple_query(self):
         self.populate_file('main.yaml', '''---
                 steps:
@@ -136,3 +154,26 @@ class PostgresTest(TestClass):
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_populate_multiple_ddl(self):
+        self.populate_file('resources/schema.sql', '''
+                                CREATE TABLE if not exists foo(
+                                    user_id      integer    primary key,
+                                    email        varchar(36)    NOT NULL
+                                );
+                                insert into foo values (1, \'test1@test.org\');
+                                truncate table foo;
+                                insert into foo values (2, \'test2@test.org\');
+                                ''')
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - prepare:
+                                            populate:
+                                                postgres:
+                                                    conf: 'test:test@localhost:5433/test'
+                                                    schema: schema.sql
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual([(2, 'test2@test.org')], response)

@@ -16,6 +16,8 @@ class Airflow(ExternalStep):
     See `db_utils https://github.com/comtihon/catcher_modules/blob/master/catcher_modules/utils/db_utils.py#L3`_
     - db_conf: see db_conf object. **Required**.
     - url: airflow url. **Required**.
+    - populate_connections: fill in airflow connections from current inventory file. **Optional** (default is false)
+    - fernet_key: fernet key. Used with populate_connections. **Optional**
 
     :db_conf: airflow db backend configuration.
 
@@ -120,18 +122,20 @@ class Airflow(ExternalStep):
         method = Step.filter_predefined_keys(body)  # run/run_status
         oper = body[method]
         if method == 'run':
-            return variables, self._run_dag(oper)
+            return variables, self._run_dag(oper, variables.get('INVENTORY_FILE'))
         if method == 'run_status':
             return variables, self._run_status(oper)
         if method == 'get_xcom':
             return variables, self._get_xcom(oper)
         raise Exception('Unknown method: {}'.format(method))
 
-    def _run_dag(self, oper):
+    def _run_dag(self, oper, inventory):
         dag_id = oper['dag_id']
         config = oper['config']
+        db_conf = config['db_conf']
+        backend = config.get('backend', 'postgresql')
         url = config['url']
-        airflow_client.unpause_dag(url, dag_id)
+        self._prepare_dag_run(dag_id, config, inventory)
         dag_config = oper.get('dag_config', {})
         run_id = airflow_client.trigger_dag(url, dag_id, dag_config)
         sync = oper.get('sync', False)
@@ -144,10 +148,26 @@ class Airflow(ExternalStep):
             if state != 'success':
                 failed_task = airflow_db_client.get_failed_task(dag_id,
                                                                 execution_date,
-                                                                config['db_conf'],
-                                                                config.get('backend', 'postgresql'))
+                                                                db_conf,
+                                                                backend)
                 raise Exception('Dag {} failed task {} with state {}'.format(dag_id, failed_task, state))
             return run_id
+
+    @staticmethod
+    def _prepare_dag_run(dag_id, config, inventory):
+        db_conf = config['db_conf']
+        backend = config.get('backend', 'postgresql')
+        url = config['url']
+        if not airflow_db_client.check_dag_exists(dag_id, db_conf, backend):
+            errors = airflow_db_client.check_import_errors(dag_id, db_conf, backend)
+            msg = 'No dag {} found.'.format(dag_id)
+            if errors:
+                msg = msg + ' Possible import errors: {}'.format(str(errors))
+            raise Exception(msg)
+        if inventory is not None and config.get('populate_connections', False):
+            # fill connections from inventory to airflow
+            airflow_db_client.fill_connections(inventory, db_conf, backend, config['fernet_key'])
+        airflow_client.unpause_dag(url, dag_id)
 
     @staticmethod
     def _run_status(oper):
