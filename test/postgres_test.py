@@ -95,7 +95,7 @@ class PostgresTest(TestClass):
                                     query: 'select count(*) from test'
                                 register: {documents: '{{ OUTPUT }}'}
                             - check:
-                                equals: {the: '{{ documents }}', is: 2}
+                                equals: {the: '{{ documents.count }}', is: 2}
                         ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
