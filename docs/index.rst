@@ -9,6 +9,7 @@
    source/catcher_modules.mq
    source/catcher_modules.service
    source/prepare_expect
+   source/airflow
 
 
 Indices and tables
