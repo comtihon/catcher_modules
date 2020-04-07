@@ -244,8 +244,11 @@ class SqlAlchemyDb:
     @staticmethod
     def compare_result_set(keys: List[str], values: List[str], db_row):
         if isinstance(values, EmptyRow):
-            debug('Got more data than expected: ' +
-                  str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+            if hasattr(db_row, '__dict__'):
+                debug('Got more data than expected: ' +
+                      str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+            else:
+                debug('Got more data than expected: {}'.format(db_row))
             return False
         expected = dict(zip(keys, values))
         if isinstance(db_row, EmptyRow):
@@ -253,8 +256,11 @@ class SqlAlchemyDb:
             return False
         for key, value in expected.items():
             if not hasattr(db_row, key):
-                debug('No ' + str(key) + ' found in ' +
-                      str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+                if hasattr(db_row, '__dict__'):
+                    debug('No ' + str(key) + ' found in ' +
+                          str({key: value for (key, value) in db_row.__dict__.items() if key != '_sa_instance_state'}))
+                else:
+                    debug('No ' + str(key) + ' found in {}'.format(db_row))
                 return False
             if str(getattr(db_row, key)) != value:
                 debug('Value mismatch for ' + str(key) + ': got '
