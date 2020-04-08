@@ -277,9 +277,9 @@ class SqlAlchemyDb:
             desired_type = getattr(row_table, key).property.columns[0].type.python_type
             if not isinstance(value, desired_type):
                 if desired_type == datetime.datetime and value:
-                    raw_data[key] = arrow.get(value).datetime
+                    raw_data[key] = arrow.get(value).datetime()
                 elif desired_type == datetime.date and value:
-                    raw_data[key] = arrow.get(value).date
+                    raw_data[key] = arrow.get(value).date()
                 else:
                     raw_data[key] = desired_type(value) if value else None
         return row_table(**raw_data)
