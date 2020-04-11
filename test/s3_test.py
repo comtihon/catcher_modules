@@ -2,6 +2,9 @@ from os.path import join
 
 import boto3
 from catcher.core.runner import Runner
+from catcher.utils.file_utils import ensure_empty
+
+import test
 from test.abs_test_class import TestClass
 
 
@@ -21,6 +24,7 @@ class S3Test(TestClass):
 
     def setUp(self):
         super().setUp()
+        ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
 
     def tearDown(self):
         super().tearDown()
@@ -44,6 +48,48 @@ class S3Test(TestClass):
                         path: /foo/file.txt
                         content: 1234
             ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.s3.get_object(Bucket='foo', Key='file.txt')
+        self.assertEqual('1234', response['Body'].read().decode())
+
+    def test_put_template(self):
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        s3_config:
+                            url: http://127.0.0.1:9001
+                            key_id: minio
+                            secret_key: minio123
+                        content: 1234
+                    steps:
+                        - s3:
+                            put:
+                                config: '{{ s3_config }}'
+                                path: /foo/file.txt
+                                content: '{{ content }}'
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.s3.get_object(Bucket='foo', Key='file.txt')
+        self.assertEqual('1234', response['Body'].read().decode())
+
+    def test_put_resource(self):
+        self.populate_file('resources/my_file', "{{ content }}")
+
+        self.populate_file('main.yaml', '''---
+                            variables:
+                                s3_config:
+                                    url: http://127.0.0.1:9001
+                                    key_id: minio
+                                    secret_key: minio123
+                                content: 1234
+                            steps:
+                                - s3:
+                                    put:
+                                        config: '{{ s3_config }}'
+                                        path: /foo/file.txt
+                                        content_resource: 'my_file'
+                            ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         response = self.s3.get_object(Bucket='foo', Key='file.txt')
