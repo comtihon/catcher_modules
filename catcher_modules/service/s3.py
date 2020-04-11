@@ -4,6 +4,7 @@ from typing import List
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
 from catcher.utils.logger import debug
+from catcher.utils.misc import fill_template_str
 
 
 class S3(ExternalStep):
@@ -101,12 +102,13 @@ class S3(ExternalStep):
         if method == 'get':
             return variables, self._get_file(s3_client, path)
         elif method == 'put':
-            content = str(oper.get('content'))
+            content = oper.get('content')
             if not content:
                 if 'content_resource' not in oper:
                     raise ValueError('No content for s3 put')
-                with open(oper['content_resource'], 'r') as f:
+                with open(join(variables['RESOURCES_DIR'], oper['content_resource']), 'r') as f:
                     content = f.read()
+            content = fill_template_str(content, variables)
             return variables, self._put_file(s3_client, path, content)
         elif method == 'list':
             return variables, self._list_dir(conf, path)
@@ -173,7 +175,6 @@ class S3(ExternalStep):
                              )
         obj = res.Object(bucket, filename)
         obj.delete()
-
 
     @staticmethod
     def _check_response(res):
