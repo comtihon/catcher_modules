@@ -1,6 +1,5 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import Step, update_variables
-from catcher.utils.misc import fill_template_str, try_get_objects
 
 
 class Marketo(ExternalStep):
@@ -70,39 +69,38 @@ class Marketo(ExternalStep):
         method = Step.filter_predefined_keys(body)  # read/write
         step = body[method]
         if method == 'read':
-            return variables, self._read(step, variables)
+            return variables, self._read(step)
         elif method == 'write':
-            return variables, self._write(step, variables)
+            return variables, self._write(step)
         else:
             raise AttributeError('unknown method: ' + method)
 
-    def _read(self, step, variables):
+    def _read(self, step):
         config = step['conf']
         from marketorestpython.client import MarketoClient
         mc = MarketoClient(config['munchkin_id'], config['client_id'], config['client_secret'], None, None)
-        filter_value = self._get_fields_as_templates(step['filter_value'], variables)
-        fields = self._get_fields_as_templates(step['fields'], variables)
+        filter_values = self._get_field_as_list(step['filter_value'])
+        fields = self._get_field_as_list(step['fields'])
         return mc.execute(method='get_multiple_leads_by_filter_type',
-                          filterType=fill_template_str(step.get('filter_key', 'email'), variables),
-                          filterValues=filter_value,
+                          filterType=step.get('filter_key', 'email'),
+                          filterValues=[str(v) for v in filter_values],
                           fields=fields,
                           batchSize=None)
 
-    def _write(self, step, variables):
+    def _write(self, step):
         config = step['conf']
         from marketorestpython.client import MarketoClient
         mc = MarketoClient(config['munchkin_id'], config['client_id'], config['client_secret'], None, None)
-        leads = self._get_fields_as_templates(step['leads'], variables)
+        leads = self._get_field_as_list(step['leads'])
         return mc.execute(method='create_update_leads',
                           leads=leads,
                           action=step['action'],
-                          lookupField=fill_template_str(step.get('lookupField', 'email'), variables),
+                          lookupField=step.get('lookupField', 'email'),
                           asyncProcessing='false',
                           partitionName='Default')
 
     @staticmethod
-    def _get_fields_as_templates(field, variables):
-        value = try_get_objects(fill_template_str(field, variables))
-        if not isinstance(value, list):
-            value = [value]
-        return value
+    def _get_field_as_list(field):
+        if not isinstance(field, list):
+            return [field]
+        return field
