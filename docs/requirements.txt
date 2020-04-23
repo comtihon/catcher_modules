@@ -1,1 +1,1 @@
-catcher==1.23.*
+catcher==1.31.*
