@@ -1,6 +1,6 @@
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
-
+from catcher_modules.utils import db_utils
 from catcher_modules.database import SqlAlchemyDb
 
 
@@ -15,6 +15,8 @@ class MSSql(ExternalStep, SqlAlchemyDb):
     - host: database host
     - password: user's password
     - port: database port
+    - driver: odbc driver name you've installed. *Optional* If not specified, the default driver, which comes with
+              catcher-modules Dockerfile will be used.
     :query: query to run. **Required**
 
     :Examples:
@@ -29,12 +31,12 @@ class MSSql(ExternalStep, SqlAlchemyDb):
                   password: password
                   host: localhost
                   port: 1433
+                  driver: ODBC Driver 17 for SQL Server
               query: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
 
     **Note** that we alias count. For some reason sqlalchemy for mssql will return `count(*)` as a column name
     instead of `count`.
-
 
     Insert into test, using string configuration
     ::
@@ -43,7 +45,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
               conf: 'user:password@localhost:5432/test'
               query: 'insert into test(id, num) values(3, 3);'
 
-    Insert into test, using string configuration with dialect
+    Insert into test, using string configuration with pymssql (pymssql should be installed)
     ::
         mssql:
           request:
@@ -53,8 +55,15 @@ class MSSql(ExternalStep, SqlAlchemyDb):
       """
 
     @property
-    def driver(self) -> str:
-        return "mssql+pymssql"
+    def dialect(self) -> str:
+        return "mssql+pyodbc"
+
+    def get_engine(self, conf):
+        if isinstance(conf, dict):
+            driver = 'ODBC Driver 17 for SQL Server' if 'driver' not in conf else conf['driver']
+        else:
+            driver = None
+        return db_utils.get_engine(conf, self.dialect, driver)
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:

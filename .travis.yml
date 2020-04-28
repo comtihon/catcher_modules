@@ -5,10 +5,14 @@ python:
   - '3.5'
   - '3.6'
   - '3.7'
+  - '3.8'
 before_install:
+- sudo docker pull jamesdbloom/mockserver
+- curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+- sudo curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list -o /etc/apt/sources.list.d/mssql-release.list
 - sudo apt-get update
 - sudo apt-get install jq
-- sudo docker pull jamesdbloom/mockserver
+- sudo ACCEPT_EULA=Y apt-get install msodbcsql17 unixodbc-dev
 install:
 - pip install Cython
 - pip install -e "file://`pwd`#egg=catcher-modules[travis]"
@@ -20,7 +24,7 @@ script:
 deploy:
   on:
     branch: master
-    python: '3.6'
+    python: '3.7'
   provider: pypi
   user: valerii.tikhonov
   distributions: bdist_wheel

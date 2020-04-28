@@ -38,5 +38,5 @@ You can find quick support in the telegram channel.
 
 Additional dependencies
 -----------------------
-| `freetds` is required for `mssql`. Read more [here](http://pymssql.org/en/stable/intro.html#install).
 | `libclntsh.dylib` is required for `oracle`. Read more [here](https://oracle.github.io/odpi/doc/installation.html).
+| `unixodbc-dev` and [driver](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) are required for `mssql`

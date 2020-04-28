@@ -6,8 +6,8 @@ from catcher.utils.logger import debug
 from catcher_modules.utils import db_utils
 
 
-def get_failed_task(dag_id, execution_time, conf, driver):
-    engine = db_utils.get_engine(conf, driver)
+def get_failed_task(dag_id, execution_time, conf, dialect):
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         result = connection.execute('''select * from task_instance ti
                                        where ti.dag_id = '{}' and ti.execution_date = '{}'
@@ -19,8 +19,8 @@ def get_failed_task(dag_id, execution_time, conf, driver):
             return None
 
 
-def get_execution_date_by_run_ud(run_id, conf, driver):
-    engine = db_utils.get_engine(conf, driver)
+def get_execution_date_by_run_ud(run_id, conf, dialect):
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         result = connection.execute('''select execution_date from dag_run where run_id = '{}' '''.format(run_id))
         rows = [dict(r) for r in result.fetchall()]
@@ -29,8 +29,8 @@ def get_execution_date_by_run_ud(run_id, conf, driver):
         return rows[0]['execution_date']
 
 
-def get_xcom(task_id, execution_time, conf, driver):
-    engine = db_utils.get_engine(conf, driver)
+def get_xcom(task_id, execution_time, conf, dialect):
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         dag_id = _get_dag_id_by_task_id(task_id, connection)
         result = connection.execute('''select * from xcom 
@@ -39,11 +39,11 @@ def get_xcom(task_id, execution_time, conf, driver):
         return [dict(r) for r in result.fetchall()][0]
 
 
-def check_dag_exists(dag_id, conf, driver) -> bool:
+def check_dag_exists(dag_id, conf, dialect) -> bool:
     """
     Check if dag exists in airflow
     """
-    engine = db_utils.get_engine(conf, driver)
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         result = connection.execute('''select * from dag 
                                            where dag_id = '{}'
@@ -52,11 +52,11 @@ def check_dag_exists(dag_id, conf, driver) -> bool:
         return found != []
 
 
-def check_import_errors(dag_id, conf, driver):
+def check_import_errors(dag_id, conf, dialect):
     """
     Check if there was import error for the dag
     """
-    engine = db_utils.get_engine(conf, driver)
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         result = connection.execute('''select * from import_error 
                                                where filename like '%%{}%%'
@@ -64,17 +64,17 @@ def check_import_errors(dag_id, conf, driver):
         return [dict(r)['stacktrace'] for r in result.fetchall()]
 
 
-def fill_connections(inventory, conf, driver, fernet_key):
+def fill_connections(inventory, conf, dialect, fernet_key):
     """
     Populate airflow connections based on catcher's inventory file
     :param inventory: path to inventory file
     :param conf: db configuration
-    :param driver: dialect
+    :param dialect: dialect
     :param fernet_key: is used in passwords encryption
     :return:
     """
     inv_dict = file_utils.read_source_file(inventory)
-    engine = db_utils.get_engine(conf, driver)
+    engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
         for name, value in inv_dict.items():
             try:

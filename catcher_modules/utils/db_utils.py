@@ -6,20 +6,23 @@ default_ports = {
     'postgresql': 5432,
     'mysql+pymysql': 3306,
     'mssql+pymssql': 1433,
+    'mssql+pyodbc': 1433,
     'oracle+cx_oracle': 1521
 }
 
 
-def get_engine(conf: Union[str, dict], driver: str = 'postgresql'):
+def get_engine(conf: Union[str, dict], dialect: str = 'postgresql', driver: str = None):
     if not isinstance(conf, str):
-        conf_str = '{}://{}:{}@{}:{}/{}'.format(driver,
+        conf_str = '{}://{}:{}@{}:{}/{}'.format(dialect,
                                                 conf['user'],
                                                 conf['password'],
                                                 conf['host'],
-                                                conf.get('port', default_ports.get(driver.lower(), '')),
+                                                conf.get('port', default_ports.get(dialect.lower(), '')),
                                                 conf['dbname'])
+        if driver is not None and 'driver' not in conf_str:  # pyodbc
+            conf_str += '?driver={}'.format(driver.replace(' ', '+'))
     else:
-        conf_str = __fill_dialect(conf, driver)
+        conf_str = __fill_dialect(conf, dialect)
     from sqlalchemy import create_engine
     return create_engine(conf_str)
 

@@ -185,10 +185,10 @@ class Airflow(ExternalStep):
             raise ValueError('Both run_id and execution_date are not specified!')
         config = oper['config']
         db_conf = config['db_conf']
-        db_driver = config.get('backend', 'postgresql')
+        dialect = config.get('backend', 'postgresql')
         if execution_date is None:
-            execution_date = airflow_db_client.get_execution_date_by_run_ud(run_id, db_conf, db_driver)
-        return airflow_db_client.get_xcom(task_id, execution_date, db_conf, db_driver)
+            execution_date = airflow_db_client.get_execution_date_by_run_ud(run_id, db_conf, dialect)
+        return airflow_db_client.get_xcom(task_id, execution_date, db_conf, dialect)
 
     @staticmethod
     def _wait_for_running(url, dag_id, execution_date, timeout):
