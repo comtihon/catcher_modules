@@ -24,6 +24,7 @@ catcher\_modules.database.mongo module
 
 .. autoclass:: catcher_modules.database.mongo.Mongo
     :members:
+    :no-undoc-members:
 
 catcher\_modules.database.oracle module
 ---------------------------------------

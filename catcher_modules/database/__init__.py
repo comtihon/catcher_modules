@@ -2,7 +2,6 @@ import csv
 import datetime
 import json
 import os
-import arrow
 from abc import abstractmethod
 from io import StringIO
 from itertools import zip_longest
@@ -276,6 +275,7 @@ class SqlAlchemyDb:
         """
         Need to check field types before creating a row.
         """
+        import arrow
         for key, value in raw_data.items():
             desired_type = getattr(row_table, key).property.columns[0].type.python_type
             if not isinstance(value, desired_type):
