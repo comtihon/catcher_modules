@@ -21,6 +21,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use object configuration
     ::
+
         mysql:
           request:
               conf:
@@ -37,6 +38,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration
     ::
+
         mysql:
           request:
               conf: 'user:password@localhost:3306/test'
@@ -44,6 +46,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration with dialect
     ::
+
         mysql:
           request:
               conf: 'mysql+pymysql://user:password@localhost:3306/test'

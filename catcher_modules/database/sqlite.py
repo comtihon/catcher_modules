@@ -15,6 +15,7 @@ class SQLite(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use relative path
     ::
+
         sqlite:
           request:
               conf: '/foo.db'
@@ -25,7 +26,9 @@ class SQLite(ExternalStep, SqlAlchemyDb):
     instead of `count`.
 
     Insert into test, using string absolute path (with 2 slashes)
-        mssql:
+    ::
+
+        sqlite:
           request:
               conf: '//absolute/path/to/foo.db'
               query: 'insert into test(id, num) values(3, 3);'

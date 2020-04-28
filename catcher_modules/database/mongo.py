@@ -33,6 +33,7 @@ class Mongo(ExternalStep):
 
     Find one document. Use **command** key when no params.
     ::
+
         mongo:
           request:
               conf:
@@ -47,6 +48,7 @@ class Mongo(ExternalStep):
 
     Insert into test, using string configuration
     ::
+
         mongo:
           request:
               conf: 'mongodb://username:password@host'

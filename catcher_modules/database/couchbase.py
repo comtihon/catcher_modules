@@ -21,6 +21,7 @@ class Couchbase(ExternalStep):
 
     Put value by key
     ::
+
         couchbase:
             request:
                 conf:
@@ -32,6 +33,7 @@ class Couchbase(ExternalStep):
 
     Get value by key
     ::
+
         couchbase:
             request:
                 conf:
@@ -44,6 +46,7 @@ class Couchbase(ExternalStep):
 
     Delete value by key
     ::
+
         couchbase:
             request:
                 conf:
@@ -56,6 +59,7 @@ class Couchbase(ExternalStep):
 
     Query by foo
     ::
+
         couchbase:
             request:
                 conf:

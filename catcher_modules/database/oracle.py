@@ -21,6 +21,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use object configuration
     ::
+
         oracle:
           request:
               conf:
@@ -34,6 +35,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration
     ::
+
         oracle:
           request:
               conf: 'user:password@localhost:1521/test'
@@ -41,6 +43,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration with dialect
     ::
+
         oracle:
           request:
               conf: 'oracle+cx_oracle://user:password@localhost:1521/test'

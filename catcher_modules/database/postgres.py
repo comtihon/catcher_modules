@@ -21,6 +21,7 @@ class Postgres(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use object configuration
     ::
+
         postgres:
           request:
               conf:
@@ -34,6 +35,7 @@ class Postgres(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration
     ::
+
         postgres:
           request:
               conf: 'user:password@localhost:5432/test'
@@ -41,6 +43,7 @@ class Postgres(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration with dialect
     ::
+
         postgres:
           request:
               conf: 'postgresql://user:password@localhost:5432/test'

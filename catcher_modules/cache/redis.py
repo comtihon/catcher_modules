@@ -18,6 +18,7 @@ class Redis(ExternalStep):
 
     Set value (default configuration)
     ::
+
         variables:
                 complex:
                     a: 1
@@ -31,6 +32,7 @@ class Redis(ExternalStep):
 
     Get value by key 'key' and register in variable 'var'
     ::
+
         redis:
             request:
                 get: 'key'
@@ -38,6 +40,7 @@ class Redis(ExternalStep):
 
     Decrement, increment by 5 and delete
     ::
+
         redis:
             actions:
                 - request:
@@ -51,6 +54,7 @@ class Redis(ExternalStep):
                 - request:
                         delete:
                             - foo
+
     """
 
     @update_variables

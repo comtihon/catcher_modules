@@ -23,6 +23,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
 
     Select all from test, use object configuration
     ::
+
         mssql:
           request:
               conf:
@@ -40,6 +41,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration
     ::
+
         mssql:
           request:
               conf: 'user:password@localhost:5432/test'
@@ -47,6 +49,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
 
     Insert into test, using string configuration with pymssql (pymssql should be installed)
     ::
+
         mssql:
           request:
               conf: 'mssql+pymssql://user:password@localhost:5432/test'

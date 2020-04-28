@@ -8,6 +8,7 @@ Subpackages
 
     catcher_modules.cache
     catcher_modules.database
+    catcher_modules.marketing
     catcher_modules.mq
     catcher_modules.service
     catcher_modules.pipeline
