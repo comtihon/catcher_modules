@@ -9,6 +9,7 @@ catcher\_modules.database.couchbase module
 
 .. autoclass:: catcher_modules.database.couchbase.Couchbase
     :members:
+    :exclude-members: action
 
 catcher\_modules.database.postgres module
 -----------------------------------------
@@ -17,7 +18,7 @@ catcher\_modules.database.postgres module
     :members:
     :inherited-members:
     :no-undoc-members:
-    :exclude-members: action, simple_input
+    :exclude-members: action
 
 catcher\_modules.database.mongo module
 ----------------------------------------
@@ -33,7 +34,7 @@ catcher\_modules.database.oracle module
     :members:
     :inherited-members:
     :no-undoc-members:
-    :exclude-members: action, simple_input
+    :exclude-members: action
 
 catcher\_modules.database.sqlite module
 ---------------------------------------
@@ -42,7 +43,7 @@ catcher\_modules.database.sqlite module
     :members:
     :inherited-members:
     :no-undoc-members:
-    :exclude-members: action, simple_input
+    :exclude-members: action
 
 catcher\_modules.database.mysql module
 --------------------------------------
@@ -51,7 +52,7 @@ catcher\_modules.database.mysql module
     :members:
     :inherited-members:
     :no-undoc-members:
-    :exclude-members: action, simple_input
+    :exclude-members: action
 
 catcher\_modules.database.mssql module
 --------------------------------------
@@ -60,4 +61,4 @@ catcher\_modules.database.mssql module
     :members:
     :inherited-members:
     :no-undoc-members:
-    :exclude-members: action, simple_input
+    :exclude-members: action

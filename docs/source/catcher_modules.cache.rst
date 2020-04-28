@@ -11,3 +11,4 @@ catcher\_modules.cache.redis module
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: action

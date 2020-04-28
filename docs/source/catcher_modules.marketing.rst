@@ -11,3 +11,4 @@ catcher\_modules.marketing.marketo module
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: action

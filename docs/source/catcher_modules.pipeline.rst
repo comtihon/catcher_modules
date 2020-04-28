@@ -9,3 +9,4 @@ catcher\_modules.pipeline.airflow module
 
 .. autoclass:: catcher_modules.pipeline.airflow.Airflow
     :members:
+    :exclude-members: action
