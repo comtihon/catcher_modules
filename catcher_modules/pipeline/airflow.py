@@ -12,8 +12,9 @@ class Airflow(ExternalStep):
     :Input:
 
     :config: airflow config object
+
     - backend: airflow db backend. *Optional* (default is 'postgresql').
-    See `db_utils https://github.com/comtihon/catcher_modules/blob/master/catcher_modules/utils/db_utils.py#L3`_
+      See `db_utils https://github.com/comtihon/catcher_modules/blob/master/catcher_modules/utils/db_utils.py#L3`_
     - db_conf: see db_conf object. **Required**.
     - url: airflow url. **Required**.
     - populate_connections: fill in airflow connections from current inventory file. **Optional** (default is false)
@@ -46,11 +47,12 @@ class Airflow(ExternalStep):
     - config: airflow config object. **Required**.
     - task_id: task id which pushed data to xcom. **Required**.
     - execution_date: dag's run execution date. Can be obtained via run_status.
-    *Optional* Either execution_date or run_id must be set.
+      *Optional* Either execution_date or run_id must be set.
     - run_id: run id of a dag. *Optional* Either execution_date or run_id must be set.
 
     Run dag async and check it's status later manually.
     ::
+
         variables:
                 db_conf: 'airflow:airflow@localhost:5433/airflow'
                 airflow: 'http://127.0.0.1:8080'
@@ -77,6 +79,7 @@ class Airflow(ExternalStep):
 
     Run dag and wait for it to be completed successfully.
     ::
+
         variables:
                 db_conf: 'airflow:airflow@localhost:5433/airflow'
                 airflow: 'http://127.0.0.1:8080'

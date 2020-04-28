@@ -22,6 +22,7 @@ class Elastic(ExternalStep):
 
     Search with limiting fields
     ::
+
         elastic:
             search:
                 url: 'http://127.0.0.1:9200'

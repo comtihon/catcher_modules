@@ -177,6 +177,7 @@ class Docker(ExternalStep):
 
     Run blocking command in a new container and check the output.
     ::
+
         steps:
             - docker:
                 start:
@@ -189,6 +190,7 @@ class Docker(ExternalStep):
 
     Start named container detached with volumes and environment.
     ::
+
         - docker:
             start:
                 image: 'my-backend-service'
@@ -204,6 +206,7 @@ class Docker(ExternalStep):
 
     Exec command on running container.
     ::
+
         - docker:
             start:
                 image: 'postgres:alpine'
@@ -223,6 +226,7 @@ class Docker(ExternalStep):
 
     Get container's logs.
     ::
+
         - docker:
             start:
                 image: 'alpine'
@@ -237,6 +241,7 @@ class Docker(ExternalStep):
 
     Disconnect a container from a network.
     ::
+
         - docker:
             disconnect:
                 hash: '{{ hash }}'

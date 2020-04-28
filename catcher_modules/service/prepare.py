@@ -14,10 +14,12 @@ class Prepare(ExternalStep):
 
     - <service_name>: See each own step's documentation for the parameters description and
                       information. Note, that not all steps are compatible with prepare step.
+
     Please, keep it mind, that resources directory is used for all data and schema files.
 
     Populate existing postgres with data from `pg_data_file`.
     ::
+
         steps:
             - prepare:
                 populate:
@@ -29,6 +31,7 @@ class Prepare(ExternalStep):
     Multiple populates and can be run at the same time. This will populate existing s3 with data, start local
     salesforce and postgres in docker and populates them as well.
     ::
+
         steps:
             - prepare:
                 populate:

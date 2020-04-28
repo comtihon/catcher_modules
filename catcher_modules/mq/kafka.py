@@ -32,6 +32,7 @@ class Kafka(ExternalStep, MqStepMixin):
 
     Read message with timestamp > 1000
     ::
+
         kafka:
             consume:
                 server: '127.0.0.1:9092'
@@ -43,6 +44,7 @@ class Kafka(ExternalStep, MqStepMixin):
 
     Produce `data` variable as json message
     ::
+
         kafka:
             produce:
                 server: '127.0.0.1:9092'

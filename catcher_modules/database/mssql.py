@@ -17,6 +17,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
     - port: database port
     - driver: odbc driver name you've installed. *Optional* If not specified, the default driver, which comes with
               catcher-modules Dockerfile will be used.
+
     :query: query to run. **Required**
 
     :Examples:

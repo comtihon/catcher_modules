@@ -16,6 +16,7 @@ class Expect(ExternalStep):
 
     Check expected schema and data in postgres.
     ::
+
         steps:
             - expect:
                 compare:
@@ -26,6 +27,7 @@ class Expect(ExternalStep):
 
     Check data in s3 and redshift.
     ::
+
         steps:
             - expect:
                 compare:

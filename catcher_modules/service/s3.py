@@ -48,6 +48,7 @@ class S3(ExternalStep):
 
     Put data into s3
     ::
+
         s3:
             put:
                 config: '{{ s3_config }}'

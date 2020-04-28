@@ -15,6 +15,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
     - host: database host
     - password: user's password
     - port: database port
+
     :query: query to run. **Required**
 
     :Examples:

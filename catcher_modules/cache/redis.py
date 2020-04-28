@@ -7,11 +7,13 @@ class Redis(ExternalStep):
     :Input:
 
     :conf:  redis configuration. Is an object.
+
     - host: redis host. Default is localhost
     - port: redis port. Default is 6379
     - db: redis database number. Default is 0
 
     :<command>: - command to run. Every command can have a list of arguments.
+
     Refer to `Redis <https://redis.io/commands>`_ and `Redis-Py <https://redis-py.readthedocs.io/en/latest/>`_
 
     :Examples:

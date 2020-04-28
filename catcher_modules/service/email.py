@@ -71,6 +71,7 @@ class Email(ExternalStep):
 
     Read all messages, take the last one and check subject
     ::
+
         variables:
             email_config:
                 host: 'imap.google.com'
@@ -86,41 +87,41 @@ class Email(ExternalStep):
     Read 2 last unread messages and mark them read
     ::
 
-            - email:
-                  receive:
-                      config: '{{ email_conf }}'
-                      filter: {unread: true}
-                      ack: true
-                      limit: 2
+        - email:
+              receive:
+                  config: '{{ email_conf }}'
+                  filter: {unread: true}
+                  ack: true
+                  limit: 2
 
     Find unread message containing blog name in subject and register it's body
     ::
 
-            - email:
-                  receive:
-                      config: '{{ email_conf }}'
-                      filter: {unread: true, subject: 'justtech.blog'}
-                      ack: true
-                      limit: 1
+        - email:
+              receive:
+                  config: '{{ email_conf }}'
+                  filter: {unread: true, subject: 'justtech.blog'}
+                  ack: true
+                  limit: 1
 
     Send message in html format
     ::
 
-            - email:
-                  send:
-                      config: '{{ email_conf }}'
-                      to: 'test@test.com'
-                      from: 'me@test.com'
-                      subject: 'test_subject'
-                      html: '
-                      <html>
-                          <body>
-                            <p>Hi,<br>
-                               How are you?<br>
-                               <a href="http://example.com">Link</a>
-                            </p>
-                          </body>
-                      </html>'
+        - email:
+              send:
+                  config: '{{ email_conf }}'
+                  to: 'test@test.com'
+                  from: 'me@test.com'
+                  subject: 'test_subject'
+                  html: '
+                  <html>
+                      <body>
+                        <p>Hi,<br>
+                           How are you?<br>
+                           <a href="http://example.com">Link</a>
+                        </p>
+                      </body>
+                  </html>'
 
     """
 

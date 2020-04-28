@@ -7,6 +7,7 @@ class Mongo(ExternalStep):
     :Input:
 
     :conf:  mongodb configuration. Can be a single line
+
     `string <https://docs.mongodb.com/manual/reference/connection-string/>`_ url or kv object. **Required**.
 
     - database: name of the database to connect to
@@ -18,6 +19,7 @@ class Mongo(ExternalStep):
 
     See `pymongo <http://api.mongodb.com/python/current/api/pymongo/mongo_client.html>`_ for more options.
     :collection: collection to use. **Required**
+
     :command: String. Use this if you have to run command without any parameters.
               Where command's value is your command to run, like `command: find_one`.  `Optional`
     :<command>: Object. Use this when you have command with parameters.
@@ -26,7 +28,7 @@ class Mongo(ExternalStep):
     :next: Run other operation just after your operation. Can be string like `next: count`
            or object with params `next: {'sort': 'author'}. You can chain multiple next (see example). `Optional`
     :list_params: Pass command params as different arguments. Useful when pymongo command takes several arguments
-                  (both *args and **kwargs). *args will be set in case of params in list while **kwargs will be sent in
+                  (both `*args` and `**kwargs`). `*args` will be set in case of params in list while `**kwargs` will be sent in
                   case of dict. See examples for more info.
 
     :Examples:
@@ -107,7 +109,7 @@ class Mongo(ExternalStep):
 
     Will run every next operation on previous one. You can chain more than one operation.
 
-    Run operation with list parameters (**kwargs). Is useful when calling commands with additional arguments.
+    Run operation with list parameters (`**kwargs`). Is useful when calling commands with additional arguments.
     ::
 
         mongo:
@@ -125,7 +127,7 @@ class Mongo(ExternalStep):
               list_params: true  # pass list arguments as separate params
           register: {document: '{{ OUTPUT }}'}
 
-    Run operation with list parameters (*args). Run map-reduce.
+    Run operation with list parameters (`*args`). Run map-reduce.
     ::
 
         mongo:

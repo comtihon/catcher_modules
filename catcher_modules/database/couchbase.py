@@ -12,9 +12,13 @@ class Couchbase(ExternalStep):
     - user: database user (optional)
     - host: database host (optional)
     - password: user's password
+
     :put: put value in the database by the key.
+
     :get: get object by key.
+
     :delete: delete object by key.
+
     :query: query to run.
 
     :Examples:

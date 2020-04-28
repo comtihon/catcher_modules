@@ -41,6 +41,7 @@ class Rabbit(ExternalStep, MqStepMixin):
 
     Read message
     ::
+
         variables:
             rabbitmq_config:
                 server: 127.0.0.1:5672
@@ -54,6 +55,7 @@ class Rabbit(ExternalStep, MqStepMixin):
 
     Publish `data` variable as message
     ::
+
         variables:
             rabbitmq_config:
                 server: 127.0.0.1:5672
@@ -71,6 +73,7 @@ class Rabbit(ExternalStep, MqStepMixin):
 
     Publish `data_from_file` variable as json message
     ::
+
         variables:
             rabbitmq_config:
                 server: 127.0.0.1:5672
