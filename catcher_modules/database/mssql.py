@@ -59,7 +59,10 @@ class MSSql(ExternalStep, SqlAlchemyDb):
         return "mssql+pyodbc"
 
     def get_engine(self, conf):
-        driver = 'ODBC Driver 17 for SQL Server' if 'driver' not in conf else conf['driver']
+        if isinstance(conf, dict):
+            driver = 'ODBC Driver 17 for SQL Server' if 'driver' not in conf else conf['driver']
+        else:
+            driver = None
         return db_utils.get_engine(conf, self.dialect, driver)
 
     @update_variables
