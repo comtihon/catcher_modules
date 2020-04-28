@@ -1,6 +1,7 @@
 from os.path import join
 
-import pymssql
+from sqlalchemy import create_engine
+
 import test
 from catcher.core.runner import Runner
 from catcher.utils.file_utils import ensure_empty
@@ -17,28 +18,23 @@ class MSSqlTest(TestClass):
 
     @property
     def connection(self):
-        return pymssql.connect(*self.conf)
+        engine = create_engine("mssql+pyodbc://sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server")
+        return engine.connect()
 
     def setUp(self):
         super().setUp()
         with self.connection as conn:
-            cur = conn.cursor()
-            cur.execute("CREATE TABLE test (id INT NOT NULL, num INT, PRIMARY KEY (id));")
-            cur.execute("insert into test(id, num) values(1, 1);")
-            cur.execute("insert into test(id, num) values(2, 2);")
-            conn.commit()
-            cur.close()
+            conn.execute("CREATE TABLE test (id INT NOT NULL, num INT, PRIMARY KEY (id));")
+            conn.execute("insert into test(id, num) values(1, 1);")
+            conn.execute("insert into test(id, num) values(2, 2);")
         ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
 
     def tearDown(self):
         super().tearDown()
         with self.connection as conn:
-            cur = conn.cursor()
-            cur.execute("DROP TABLE test;")
-            cur.execute("DROP TABLE if exists foo;")
-            cur.execute("DROP TABLE if exists bar;")
-            conn.commit()
-            cur.close()
+            conn.execute("DROP TABLE test;")
+            conn.execute("DROP TABLE if exists foo;")
+            conn.execute("DROP TABLE if exists bar;")
 
     def test_read_simple_query(self):
         self.populate_file('test_inventory.yml', '''
@@ -48,6 +44,7 @@ class MSSqlTest(TestClass):
             password: Test1234
             host: localhost
             port: 1433
+            driver: ODBC Driver 17 for SQL Server
         ''')
 
         self.populate_file('main.yaml', '''---
@@ -65,7 +62,7 @@ class MSSqlTest(TestClass):
 
     def test_str_conf(self):
         self.populate_file('test_inventory.yml', '''
-        mssql: 'sa:Test1234@localhost:1433/tempdb'
+        mssql: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
         ''')
 
         self.populate_file('main.yaml', '''---
@@ -86,7 +83,7 @@ class MSSqlTest(TestClass):
                 steps:
                     - mssql:
                         request:
-                            conf: 'sa:Test1234@localhost:1433/tempdb'
+                            conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
                             query: 'insert into test(id, num) values(3, 3);'
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
@@ -97,7 +94,7 @@ class MSSqlTest(TestClass):
     def test_read_with_variables(self):
         self.populate_file('main.yaml', '''---
                 variables:
-                    db_conf: 'sa:Test1234@localhost:1433/tempdb'
+                    db_conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
                 steps:
                    - echo: {from: '{{ RANDOM_INT }}', register: {num: '{{ OUTPUT }}'}} 
                    - echo: {from: '{{ RANDOM_INT }}', register: {id: '{{ OUTPUT }}'}} 
@@ -134,7 +131,7 @@ class MSSqlTest(TestClass):
                         - prepare:
                             populate:
                                 mssql:
-                                    conf: 'sa:Test1234@localhost:1433/tempdb'
+                                    conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
                                     schema: schema.sql
                                     data:
                                         foo: foo.csv
@@ -152,22 +149,22 @@ class MSSqlTest(TestClass):
         self.populate_schema_file()
         self.populate_data_file()
         self.populate_file('main.yaml', '''---
-                                    steps:
-                                        - prepare:
-                                            populate:
-                                                mssql:
-                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
-                                                    schema: schema.sql
-                                                    data:
-                                                        foo: foo.csv
-                                        - expect:
-                                            compare:
-                                                mssql:
-                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
-                                                    data:
-                                                        foo: foo.csv
-                                                    strict: true
-                                    ''')
+                        steps:
+                            - prepare:
+                                populate:
+                                    mssql:
+                                        conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
+                                        schema: schema.sql
+                                        data:
+                                            foo: foo.csv
+                            - expect:
+                                compare:
+                                    mssql:
+                                        conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
+                                        data:
+                                            foo: foo.csv
+                                        strict: true
+                        ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
@@ -175,20 +172,25 @@ class MSSqlTest(TestClass):
         self.populate_schema_file()
         self.populate_data_file()
         self.populate_file('main.yaml', '''---
-                                    steps:
-                                        - prepare:
-                                            populate:
-                                                mssql:
-                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
-                                                    schema: schema.sql
-                                                    data:
-                                                        foo: foo.csv
-                                        - expect:
-                                            compare:
-                                                mssql:
-                                                    conf: 'sa:Test1234@localhost:1433/tempdb'
-                                                    data:
-                                                        foo: foo.csv
+                        steps:
+                            - prepare:
+                                populate:
+                                    mssql:
+                                        conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
+                                        schema: schema.sql
+                                        data:
+                                            foo: foo.csv
+                            - expect:
+                                compare:
+                                    mssql:
+                                        conf: 'sa:Test1234@localhost:1433/tempdb?driver=ODBC+Driver+17+for+SQL+Server'
+                                        data:
+                                            foo: foo.csv
                                     ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def get_values(self, table):
+        with self.connection as conn:
+            return conn.execute('select * from ' + table).fetchall()
+

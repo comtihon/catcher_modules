@@ -1,3 +1,7 @@
+# 5.0.0
+## Incompatible changes:
+* mssql step uses pyodbc instead of pymssql, as it is not maintained anymore.
+
 # 4.1.0
 ## New
 * Airflow step

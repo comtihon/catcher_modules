@@ -49,7 +49,7 @@ class Oracle(ExternalStep, SqlAlchemyDb):
       """
 
     @property
-    def driver(self) -> str:
+    def dialect(self) -> str:
         return "oracle+cx_oracle"
 
     @update_variables

@@ -23,7 +23,7 @@ class SqlAlchemyDb:
 
     @property
     @abstractmethod
-    def driver(self) -> str:
+    def dialect(self) -> str:
         pass
 
     @abstractmethod
@@ -151,10 +151,13 @@ class SqlAlchemyDb:
                 else:
                     self._check_data(conf, table_name, csv_stream)
 
+    def get_engine(self, conf):
+        return db_utils.get_engine(conf, self.dialect)
+
     def __populate_csv(self, conf, table_name, path_to_csv, variables, use_json):
         csv_reader = csv.reader(self.__read_n_fill_csv(path_to_csv, variables), delimiter=',')
         line_count = 0
-        engine = db_utils.get_engine(conf, self.driver)
+        engine = self.get_engine(conf)
 
         row_table = self.__automap_table(table_name, engine)
         from sqlalchemy.orm import Session
@@ -182,7 +185,7 @@ class SqlAlchemyDb:
         iter_csv = iter(generator_utils.csv_to_generator(csv_stream))
         keys = next(iter_csv)
 
-        engine = db_utils.get_engine(conf, self.driver)
+        engine = self.get_engine(conf)
         row_table = self.__automap_table(table_name, engine)
         from sqlalchemy.orm import Session
         session = Session(engine)
@@ -199,7 +202,7 @@ class SqlAlchemyDb:
             session.close()
 
     def _check_data_strict(self, conf, table_name, csv_stream):
-        engine = db_utils.get_engine(conf, self.driver)
+        engine = self.get_engine(conf)
         csv_generator = generator_utils.csv_to_generator(csv_stream)
         keys = next(iter(csv_generator))
         db_generator = generator_utils.table_to_generator(table_name, engine)
@@ -210,7 +213,7 @@ class SqlAlchemyDb:
             raise Exception('Data check failed')
 
     def __execute(self, conf: str, query: str):
-        engine = db_utils.get_engine(conf, self.driver)
+        engine = self.get_engine(conf)
         with engine.connect() as connection:
             res = connection.execute(query)
             if res.returns_rows:

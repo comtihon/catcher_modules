@@ -13,7 +13,7 @@ def extras() -> dict:
         'kafka': ["pykafka==2.8.*"],
         'couchbase': ["couchbase==2.5.*"],
         'postgres': ["sqlalchemy==1.3.*", "psycopg2==2.8.*"],
-        'mssql': ["cython==0.29.*", "pymssql==2.1.*", "sqlalchemy==1.3.*"],
+        'mssql': ["pyodbc==4.0.*", "sqlalchemy==1.3.*"],
         'mysql': ["cython==0.29.*", "pymysql==0.9.*", "sqlalchemy==1.3.*"],
         'oracle': ["sqlalchemy==1.3.*", "cx_oracle==7.1.*"],
         'sqlite': ["sqlalchemy==1.3.*"],
