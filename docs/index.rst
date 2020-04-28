@@ -6,6 +6,7 @@
 
    source/catcher_modules.cache
    source/catcher_modules.database
+   source/catcher_modules.marketing
    source/catcher_modules.mq
    source/catcher_modules.service
    source/catcher_modules.pipeline
