@@ -1,3 +1,3 @@
 APPNAME = 'catcher-modules'
 APPAUTHOR = 'Valerii Tikhonov'
-APPVSN = '5.0.0'
+APPVSN = '5.0.1'
