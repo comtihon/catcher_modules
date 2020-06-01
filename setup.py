@@ -25,7 +25,8 @@ def extras() -> dict:
         'rabbit': ["pika==0.13.1"],
         'email': ["imbox==0.9.*"],
         'marketo': ["marketorestpython==0.5.*"],
-        'airflow': ["cryptography==2.8.*"]
+        'airflow': ["cryptography==2.8.*"],
+        'selenium': ["selenium==3.141.*"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     # don't try to install couchbase in travis

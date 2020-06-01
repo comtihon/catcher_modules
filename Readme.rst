@@ -38,5 +38,6 @@ You can find quick support in the telegram channel.
 
 Additional dependencies
 -----------------------
-| `libclntsh.dylib` is required for `oracle`. Read more [here](https://oracle.github.io/odpi/doc/installation.html).
-| `unixodbc-dev` and [driver](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server) are required for `mssql`
+| `libclntsh.dylib` is required for `oracle`. Read more `here <https://oracle.github.io/odpi/doc/installation.html>`_.
+| `unixodbc-dev` and `driver <https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server>`_ are required for `mssql`
+| `Webdriver <https://www.selenium.dev/documentation/en/webdriver/driver_requirements/#quick-reference>`_ is required for selenium
