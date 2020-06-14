@@ -15,53 +15,44 @@ class SeleniumTest(TestClass):
     def setUp(self):
         super().setUp()
         ensure_empty(join(test.get_test_dir(self.test_name), 'steps'))
-
-    def test_python_selenium_with_output(self):
-        self.populate_file('steps/test.py', '''from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-
-driver = webdriver.Firefox()
-driver.get("http://www.python.org")
-assert "Python" in driver.title
-elem = driver.find_element_by_name("q")
-elem.clear()
-elem.send_keys("pycon")
-elem.send_keys(Keys.RETURN)
-assert "No results found." not in driver.page_source
-driver.close()
-print('{"variable":"value"}')
-
-        ''')
-        self.populate_file('main.yaml', '''---
-            steps:
-                - selenium:
-                    test:
-                        driver: '/home/val/geckodriver'
-                        file: test/tmp/selenium/steps/test.py
-                    register: {variable: '{{ OUTPUT.variable }}'}
-                - echo: {from: '{{ variable }}', to: variable.output}
-            ''')
-        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
-        self.assertTrue(runner.run_tests())
-        self.assertTrue(check_file(join(self.test_dir, 'variable.output'), 'value'))
-
-    def test_access_variables(self):
         self.populate_file('steps/test.py', '''from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import os
 
 driver = webdriver.Firefox()
-driver.get(os.environ['site_url'])
-assert "Python" in driver.title
-elem = driver.find_element_by_name("q")
-elem.clear()
-elem.send_keys("pycon")
-elem.send_keys(Keys.RETURN)
-assert "No results found." not in driver.page_source
-driver.close()
-print('{"variable":"value"}')
+try:
+    driver.get(os.environ['site_url'])
+    assert "Python" in driver.title
+    elem = driver.find_element_by_name("q")
+    elem.clear()
+    elem.send_keys("pycon")
+    elem.send_keys(Keys.RETURN)
+    assert "No results found." not in driver.page_source
+finally:
+    driver.close()''')
+        self.populate_file('steps/google_search.js', '''const {Builder, By, Key, until} = require('selenium-webdriver');
+        async function basicExample(){
+            let driver = await new Builder().forBrowser('firefox').build();
+            try{
+                await driver.get(process.env.site_url);
+                await driver.findElement(By.name('q')).sendKeys('webdriver', Key.RETURN);
+                await driver.wait(until.titleContains('webdriver'), 1000);
+                await driver.getTitle().then(function(title) {
+                            console.log('{\"title\":\"' + title + '\"}')
+                    });
+                driver.quit();
+            }
+            catch(err) {
+                console.error(err);
+                process.exitCode = 1;
+                driver.quit();
+              }
+        }
+        basicExample();
+        ''')
 
-                ''')
+    def test_access_variables(self):
+        self._add_output('steps/test.py', "print('{\"variable\":\"value\"}')")
         self.populate_file('main.yaml', '''---
                     variables:
                         site_url: 'http://www.python.org'
@@ -70,28 +61,18 @@ print('{"variable":"value"}')
                             test:
                                 driver: '/home/val/geckodriver'
                                 file: test/tmp/selenium/steps/test.py
+                            register: {variable: '{{ OUTPUT.variable }}'}
+                        - echo: {from: '{{ variable }}', to: variable.output}
                     ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+        self.assertTrue(check_file(join(self.test_dir, 'variable.output'), 'value'))
 
     def test_str_output(self):
-        self.populate_file('steps/test.py', '''from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-
-driver = webdriver.Firefox()
-driver.get("http://www.python.org")
-assert "Python" in driver.title
-elem = driver.find_element_by_name("q")
-elem.clear()
-elem.send_keys("pycon")
-elem.send_keys(Keys.RETURN)
-assert "No results found." not in driver.page_source
-driver.close()
-print('some plain text output')
-print('and here')
-
-        ''')
+        self._add_output('steps/test.py', "print('some plain text output')", "print('and here')")
         self.populate_file('main.yaml', '''---
+            variables:
+                site_url: 'http://www.python.org'
             steps:
                 - selenium:
                     test:
@@ -103,3 +84,50 @@ print('and here')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         self.assertTrue(check_file(join(self.test_dir, 'variable.output'), 'some plain text output\nand here\n'))
+
+    def test_py_fail(self):
+        self.populate_file('main.yaml', '''---
+                            variables:
+                                site_url: 'http://www.example.org'
+                            steps:
+                                - selenium:
+                                    test:
+                                        driver: '/home/val/geckodriver'
+                                        file: test/tmp/selenium/steps/test.py
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
+
+    def test_js_selenium(self):
+        self.populate_file('main.yaml', '''---
+                            variables:
+                                site_url: 'http://www.google.com/ncr'
+                            steps:
+                                - selenium:
+                                    test:
+                                        driver: '/home/val/geckodriver'
+                                        file: test/tmp/selenium/steps/google_search.js
+                                    register: {title: '{{ OUTPUT.title }}'}
+                                - echo: {from: '{{ title }}', to: variable.output}
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        with open(join(self.test_dir, 'variable.output')) as f:
+            self.assertTrue('Google' in f.read())
+
+    def test_js_fail(self):
+        self.populate_file('main.yaml', '''---
+                                    variables:
+                                        site_url: 'http://www.example.com'
+                                    steps:
+                                        - selenium:
+                                            test:
+                                                driver: '/home/val/geckodriver'
+                                                file: test/tmp/selenium/steps/google_search.js
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
+
+    def _add_output(self, file, *output):
+        with open(join(self.test_dir, file), 'a+') as w:
+            w.write('\n' + '\n'.join(output))

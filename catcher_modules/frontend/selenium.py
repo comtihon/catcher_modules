@@ -58,6 +58,8 @@ class Selenium(ExternalStep):
     def _form_cmd(test_file: str):
         if test_file.endswith('.py'):  # python executable
             return ['python', test_file]
+        if test_file.endswith('.js'):  # node js executable
+            return ['node', test_file]
         return None
 
     @staticmethod
