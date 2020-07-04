@@ -14,8 +14,8 @@ class SeleniumTest(TestClass):
 
     def setUp(self):
         super().setUp()
-        ensure_empty(join(test.get_test_dir(self.test_name), 'steps'))
-        self.populate_file('steps/test.py', '''from selenium import webdriver
+        ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
+        self.populate_file('resources/test.py', '''from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import os
 
@@ -30,7 +30,7 @@ try:
     assert "No results found." not in driver.page_source
 finally:
     driver.close()''')
-        self.populate_file('steps/google_search.js', '''const {Builder, By, Key, until} = require('selenium-webdriver');
+        self.populate_file('resources/google_search.js', '''const {Builder, By, Key, until} = require('selenium-webdriver');
         async function basicExample(){
             let driver = await new Builder().forBrowser('firefox').build();
             try{
@@ -50,17 +50,39 @@ finally:
         }
         basicExample();
         ''')
+        self.populate_file('resources/MySeleniumTest.java', '''package selenium;
+
+import org.openqa.selenium.By; 
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+public class MySeleniumTest {
+
+    public static void main(String[] args) {
+        WebDriver driver = new FirefoxDriver();
+        try {
+            driver.get(System.getenv("site_url"));
+            WebElement element = driver.findElement(By.name("q"));
+            element.sendKeys("Cheese!");
+            element.submit();
+        } finally {
+            driver.quit();
+        }
+    }
+}
+        ''')
 
     def test_access_variables(self):
-        self._add_output('steps/test.py', "print('{\"variable\":\"value\"}')")
+        self._add_output('resources/test.py', "print('{\"variable\":\"value\"}')")
         self.populate_file('main.yaml', '''---
                     variables:
                         site_url: 'http://www.python.org'
                     steps:
                         - selenium:
                             test:
-                                driver: '/home/val/geckodriver'
-                                file: test/tmp/selenium/steps/test.py
+                                driver: '/usr/lib/geckodriver'
+                                file: test/tmp/selenium/resources/test.py
                             register: {variable: '{{ OUTPUT.variable }}'}
                         - echo: {from: '{{ variable }}', to: variable.output}
                     ''')
@@ -69,15 +91,15 @@ finally:
         self.assertTrue(check_file(join(self.test_dir, 'variable.output'), 'value'))
 
     def test_str_output(self):
-        self._add_output('steps/test.py', "print('some plain text output')", "print('and here')")
+        self._add_output('resources/test.py', "print('some plain text output')", "print('and here')")
         self.populate_file('main.yaml', '''---
             variables:
                 site_url: 'http://www.python.org'
             steps:
                 - selenium:
                     test:
-                        driver: '/home/val/geckodriver'
-                        file: test/tmp/selenium/steps/test.py
+                        driver: '/usr/lib/geckodriver'
+                        file: test/tmp/selenium/resources/test.py
                     register: {variable: '{{ OUTPUT }}'}
                 - echo: {from: '{{ variable }}', to: variable.output}
             ''')
@@ -92,8 +114,8 @@ finally:
                             steps:
                                 - selenium:
                                     test:
-                                        driver: '/home/val/geckodriver'
-                                        file: test/tmp/selenium/steps/test.py
+                                        driver: '/usr/lib/geckodriver'
+                                        file: test/tmp/selenium/resources/test.py
                             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertFalse(runner.run_tests())
@@ -105,8 +127,8 @@ finally:
                             steps:
                                 - selenium:
                                     test:
-                                        driver: '/home/val/geckodriver'
-                                        file: test/tmp/selenium/steps/google_search.js
+                                        driver: '/usr/lib/geckodriver'
+                                        file: test/tmp/selenium/resources/google_search.js
                                     register: {title: '{{ OUTPUT.title }}'}
                                 - echo: {from: '{{ title }}', to: variable.output}
                             ''')
@@ -122,8 +144,36 @@ finally:
                                     steps:
                                         - selenium:
                                             test:
-                                                driver: '/home/val/geckodriver'
-                                                file: test/tmp/selenium/steps/google_search.js
+                                                driver: '/usr/lib/geckodriver'
+                                                file: test/tmp/selenium/resources/google_search.js
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertFalse(runner.run_tests())
+
+    def test_java_selenium(self):
+        self.populate_file('main.yaml', '''---
+                                    variables:
+                                        site_url: 'http://www.google.com/ncr'
+                                    steps:
+                                        - selenium:
+                                            test:
+                                                driver: '/usr/lib/geckodriver'
+                                                file: test/tmp/selenium/resources/MySeleniumTest.java
+                                                library: '/usr/share/java/*'
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
+    def test_java_fail(self):
+        self.populate_file('main.yaml', '''---
+                                    variables:
+                                        site_url: 'http://www.example.com'
+                                    steps:
+                                        - selenium:
+                                            test:
+                                                driver: '/usr/lib/geckodriver'
+                                                file: test/tmp/selenium/resources/MySeleniumTest.java
+                                                library: '/usr/share/java/*'
                                     ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertFalse(runner.run_tests())

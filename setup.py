@@ -43,6 +43,7 @@ setup(name=catcher_modules.APPNAME,
       packages=find_packages(),
       install_requires=get_requirements(),
       include_package_data=True,
+      package_data={'catcher_modules': ['resources/*']},
       classifiers=[
           'Intended Audience :: Developers',
           'License :: OSI Approved :: Apache Software License',
