@@ -13,7 +13,8 @@ class Selenium(ExternalStep):
 
     - driver: path to the driver executable. *Optional*. If not specified - will try to use PATH variable.
     - file: path to your file with the test
-    - libraries: path to selenium client libraries. *Optional*. Used for sources compilation (f.e. .java -> .class)
+    - libraries: path to selenium client libraries. *Optional*. Used for sources compilation (f.e. .java -> .class).
+      Default is /usr/lib/java/*
 
     :Examples:
 
@@ -48,7 +49,7 @@ class Selenium(ExternalStep):
         step = body[method]
         driver = step.get('driver')
         file = step['file']
-        library = step.get('library')
+        library = step.get('library', '/usr/share/java/*')
         if library is not None and not isinstance(library, list):
             library = [library]
         my_env = os.environ.copy()
