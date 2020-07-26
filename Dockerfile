@@ -16,7 +16,9 @@ RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac
 
 ## languages for external step support
 # install java
-RUN apk --no-cache add openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apk --no-cache add openjdk8
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+ENV PATH="$JAVA_HOME/bin:${PATH}"
 # install kotlin
 RUN curl -s https://get.sdkman.io | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install kotlin'
@@ -48,4 +50,7 @@ WORKDIR /opt/catcher/
 ## selenium libraries
 RUN npm install selenium-webdriver
 RUN mkdir -p /usr/share/java \
-  && wget https://repo1.maven.org/maven2/org/seleniumhq/selenium/selenium-java/3.141.59/selenium-java-3.141.59.jar -O /usr/share/java/selenium-java.jar
+ && wget https://selenium-release.storage.googleapis.com/3.141/selenium-java-3.141.59.zip \
+ && unzip selenium-java-3.141.59.zip -d /usr/share/java \
+ && mv /usr/share/java/libs/*.jar /usr/share/java/
+RUN wget https://repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.0-rc7/auto-service-annotations-1.0-rc7.jar -P /usr/share/java/
