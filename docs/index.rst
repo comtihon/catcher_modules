@@ -12,6 +12,7 @@
    source/catcher_modules.pipeline
    source/prepare_expect
    source/airflow
+   source/selenium
 
 
 Indices and tables

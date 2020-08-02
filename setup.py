@@ -25,7 +25,8 @@ def extras() -> dict:
         'rabbit': ["pika==0.13.1"],
         'email': ["imbox==0.9.*"],
         'marketo': ["marketorestpython==0.5.*"],
-        'airflow': ["cryptography==2.8.*"]
+        'airflow': ["cryptography==2.8.*"],
+        'selenium': ["selenium==3.141.*"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     # don't try to install couchbase in travis
@@ -42,6 +43,7 @@ setup(name=catcher_modules.APPNAME,
       packages=find_packages(),
       install_requires=get_requirements(),
       include_package_data=True,
+      package_data={'catcher_modules': ['resources/*']},
       classifiers=[
           'Intended Audience :: Developers',
           'License :: OSI Approved :: Apache Software License',
