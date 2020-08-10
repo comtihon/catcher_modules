@@ -1,6 +1,7 @@
 from catcher.steps.external_step import ExternalStep
 
 import catcher_modules.database
+from catcher.utils import misc
 from catcher_modules.utils import module_utils
 
 
@@ -14,6 +15,7 @@ class Prepare(ExternalStep):
 
     - <service_name>: See each own step's documentation for the parameters description and
                       information. Note, that not all steps are compatible with prepare step.
+    - variables: Variables, which will override state (only for this prepare step).
 
     Please, keep it mind, that resources directory is used for all data and schema files.
 
@@ -44,14 +46,28 @@ class Prepare(ExternalStep):
                         schema: {{ pg_schema_file }}
                         data: {{ pg_data_file }}
 
+    Prepare step with variables override.
+    ::
+
+        - prepare:
+             populate:
+               postgres:
+                    conf: '{{ postgres_conf }}'
+                    schema: create_personal_data_customer.sql
+               variables:
+                    email: '{{ random("email") }}'
+
     """
     def action(self, includes: dict, variables: dict) -> dict or tuple:
         input_data = self.simple_input(variables)
+        variables_override = misc.merge_two_dicts(variables, input_data['populate'].get('variables'))
         db_modules = module_utils.list_modules_in_package(catcher_modules.database)
         for service, data in input_data['populate'].items():
+            if service == 'variables':
+                continue
             if service in db_modules:  # database
                 found = module_utils.find_class_in_module('catcher_modules.database.' + service, service)
-                found(**{service: data}).populate(variables, **data)
+                found(**{service: data}).populate(variables_override, **data)
             # TODO cache
             # TODO s3
             # TODO http mock
