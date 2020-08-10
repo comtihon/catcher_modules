@@ -225,3 +225,41 @@ class PrepareTest(TestClass):
                     ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_prepare_variables_override(self):
+        self.populate_file('resources/pg_schema.sql', '''
+                CREATE TABLE foo(
+                    user_id      integer    primary key,
+                    email        varchar(36)    NOT NULL
+                );
+                ''')
+        self.populate_file('resources/foo.csv', "user_id,email\n"
+                                                "{% for user in users %}"
+                                                "{{ loop.index }},{{ user }}\n"
+                                                "{% endfor %}"
+                                                "4,other_email\n"
+                           )
+        self.populate_file('main.yaml', '''---
+                    variables:
+                        postgres: 'test:test@localhost:5433/test'
+                        users: ['test_1', 'test_2', 'test_3']
+                    steps:
+                        - prepare:
+                            populate:
+                                postgres:
+                                    conf: '{{ postgres }}'
+                                    schema: pg_schema.sql
+                                    data:
+                                        foo: foo.csv
+                                variables:
+                                    users: ['u_1', 'u_2', 'u_3']
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual(4, len(response))
+        self.assertEqual(1, response[0][0])
+        self.assertEqual('u_1', response[0][1])
+        self.assertEqual('u_2', response[1][1])
+        self.assertEqual('u_3', response[2][1])
+        self.assertEqual('other_email', response[3][1])
