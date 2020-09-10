@@ -6,6 +6,8 @@ from catcher_modules.database import SqlAlchemyDb
 
 class Postgres(ExternalStep, SqlAlchemyDb):
     """
+    Allows you to run queries in `Postgres <https://www.postgresql.org/>`_
+
     :Input:
 
     :conf:  postgres configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
@@ -16,7 +18,8 @@ class Postgres(ExternalStep, SqlAlchemyDb):
     - password: user's password
     - port: database port
 
-    :query: query to run. **Required**
+    :query: query to run. **Deprecated since 5.2**
+    :sql: query or sql file from resources to run. **Required**
 
     :Examples:
 
@@ -31,16 +34,16 @@ class Postgres(ExternalStep, SqlAlchemyDb):
                   password: password
                   host: localhost
                   port: 5433
-              query: 'select count(*) from test'
+              sql: 'select count(*) from test'
           register: {documents: '{{ OUTPUT }}'}
 
-    Insert into test, using string configuration
+    Run all commands from **resources/my_ddl.sql**, using string configuration
     ::
 
         postgres:
           request:
               conf: 'user:password@localhost:5432/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'my_ddl.sql'
 
     Insert into test, using string configuration with dialect
     ::
@@ -48,7 +51,7 @@ class Postgres(ExternalStep, SqlAlchemyDb):
         postgres:
           request:
               conf: 'postgresql://user:password@localhost:5432/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
 
       """
@@ -60,4 +63,4 @@ class Postgres(ExternalStep, SqlAlchemyDb):
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)
-        return variables, self.execute(body)
+        return variables, self.execute(body, variables)

@@ -4,6 +4,9 @@ from catcher.steps.step import update_variables
 
 class Redis(ExternalStep):
     """
+    Work with Redis cache.
+    Put value to cache or get it, increment/decrement or delete.
+
     :Input:
 
     :conf:  redis configuration. Is an object.

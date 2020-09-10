@@ -4,6 +4,8 @@ from catcher.steps.step import update_variables
 
 class Couchbase(ExternalStep):
     """
+    Allows you to perform put/get/delete/query operations in `Couchbase <https://www.couchbase.com/>`_
+
     :Input:
 
     :conf:  couchbase configuration. Is an object. **Required**.

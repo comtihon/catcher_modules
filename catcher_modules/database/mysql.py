@@ -6,6 +6,9 @@ from catcher_modules.database import SqlAlchemyDb
 
 class MySql(ExternalStep, SqlAlchemyDb):
     """
+    Allows you to run queries on `MySQL <https://www.mysql.com/>`_
+    (and all mysql compatible databases like `MariaDB <https://mariadb.org/>`_).
+
     :Input:
 
     :conf:  mysql configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
@@ -16,7 +19,8 @@ class MySql(ExternalStep, SqlAlchemyDb):
     - password: user's password
     - port: database port
 
-    :query: query to run. **Required**
+    :query: query to run. **Deprecated since 5.2**
+    :sql: query or sql file from resources to run. **Required**
 
     :Examples:
 
@@ -31,7 +35,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
                   password: password
                   host: localhost
                   port: 3306
-              query: 'select count(*) as count from test'
+              sql: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
 
     **Note** that we alias count. For some reason sqlalchemy for mysql will return `count(*)` as a column name
@@ -43,7 +47,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
         mysql:
           request:
               conf: 'user:password@localhost:3306/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
     Insert into test, using string configuration with dialect
     ::
@@ -51,7 +55,7 @@ class MySql(ExternalStep, SqlAlchemyDb):
         mysql:
           request:
               conf: 'mysql+pymysql://user:password@localhost:3306/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
       """
 
@@ -62,4 +66,4 @@ class MySql(ExternalStep, SqlAlchemyDb):
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)
-        return variables, self.execute(body)
+        return variables, self.execute(body, variables)

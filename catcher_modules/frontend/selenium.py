@@ -7,7 +7,14 @@ from catcher.utils import external_utils
 
 class Selenium(ExternalStep):
     """
-    Run selenium test
+    This complex step consists of two parts. First - you need to create a `Selenium <https://www.selenium.dev/>`_ script
+    and put it in the Catcher's resources directory.
+    Second - run the step in Catcher.
+
+    Catcher variables can be accessed from Selenium script via environment variables. All output from Selenium script is
+    routed to Catcher **OUTPUT** variable.
+
+    If you specify java/kotlin source file as a Selenium script - Catcher will try to compile it using system's compiler
 
     :test:
 

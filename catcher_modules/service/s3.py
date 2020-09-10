@@ -9,6 +9,10 @@ from catcher.utils.misc import fill_template_str
 
 class S3(ExternalStep):
     """
+    Allows you to get/put/list/delete files in Amazon `S3 <https://aws.amazon.com/s3/>`_
+
+    Useful hint: for local testing you can use `Minio <https://min.io/>`_ run in docker as it is S3 API compatible.
+
     :Input:
 
     :config: s3 config object, used in other s3 commands.

@@ -4,6 +4,9 @@ from catcher.steps.step import Step, update_variables
 
 class Elastic(ExternalStep):
     """
+    Allows you to get data from `Elasticsearch <https://www.elastic.co/elastic-stack>`_. Useful, when your services push their
+    logs there and you need to check the logs automatically from the test.
+
     :Input:
 
     :search: search elastic

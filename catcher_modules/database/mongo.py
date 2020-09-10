@@ -4,6 +4,7 @@ from catcher.steps.step import update_variables
 
 class Mongo(ExternalStep):
     """
+    Allows you to interact with `MongoDB <https://www.mongodb.com/>`_ NoSQL database.
     :Input:
 
     :conf:  mongodb configuration. Can be a single line

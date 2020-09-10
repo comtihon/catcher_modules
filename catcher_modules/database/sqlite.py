@@ -6,10 +6,15 @@ from catcher_modules.database import SqlAlchemyDb
 
 class SQLite(ExternalStep, SqlAlchemyDb):
     """
+    Allows you to create `SQLite <https://www.sqlite.org/index.html>`_ database on your local filesystem and work with
+    it.
+    **Important** - for relative path use one slash `/`. For absolute slash - two `//`.
+
     :Input:
 
     :conf:  sqlite path string. Dialect is not mandatory. **Required**.
-    :query: query to run. **Required**
+    :query: query to run. **Deprecated since 5.2**
+    :sql: query or sql file from resources to run. **Required**
 
     :Examples:
 
@@ -19,7 +24,7 @@ class SQLite(ExternalStep, SqlAlchemyDb):
         sqlite:
           request:
               conf: '/foo.db'
-              query: 'select count(*) as count from test'
+              sql: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
 
     **Note** that we alias count. For some reason sqlalchemy for sqlite will return `count(*)` as a column name
@@ -31,7 +36,7 @@ class SQLite(ExternalStep, SqlAlchemyDb):
         sqlite:
           request:
               conf: '//absolute/path/to/foo.db'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
       """
 
@@ -42,4 +47,4 @@ class SQLite(ExternalStep, SqlAlchemyDb):
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)
-        return variables, self.execute(body)
+        return variables, self.execute(body, variables)

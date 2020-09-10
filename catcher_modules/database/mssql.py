@@ -6,6 +6,8 @@ from catcher_modules.database import SqlAlchemyDb
 
 class MSSql(ExternalStep, SqlAlchemyDb):
     """
+    Allows you to run queries on Microsoft SQL `Server <https://www.microsoft.com/en-us/sql-server/>`_.
+
     :Input:
 
     :conf:  mssql configuration. Can be a single line string or object. Dialect is not mandatory. **Required**.
@@ -18,7 +20,8 @@ class MSSql(ExternalStep, SqlAlchemyDb):
     - driver: odbc driver name you've installed. *Optional* If not specified, the default driver, which comes with
               catcher-modules Dockerfile will be used.
 
-    :query: query to run. **Required**
+    :query: query to run. **Deprecated since 5.2**
+    :sql: query or sql file from resources to run. **Required**
 
     :Examples:
 
@@ -34,7 +37,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
                   host: localhost
                   port: 1433
                   driver: ODBC Driver 17 for SQL Server
-              query: 'select count(*) as count from test'
+              sql: 'select count(*) as count from test'
           register: {documents: '{{ OUTPUT }}'}
 
     **Note** that we alias count. For some reason sqlalchemy for mssql will return `count(*)` as a column name
@@ -46,7 +49,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
         mssql:
           request:
               conf: 'user:password@localhost:5432/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
     Insert into test, using string configuration with pymssql (pymssql should be installed)
     ::
@@ -54,7 +57,7 @@ class MSSql(ExternalStep, SqlAlchemyDb):
         mssql:
           request:
               conf: 'mssql+pymssql://user:password@localhost:5432/test'
-              query: 'insert into test(id, num) values(3, 3);'
+              sql: 'insert into test(id, num) values(3, 3);'
 
       """
 
@@ -72,4 +75,4 @@ class MSSql(ExternalStep, SqlAlchemyDb):
     @update_variables
     def action(self, includes: dict, variables: dict) -> any:
         body = self.simple_input(variables)
-        return variables, self.execute(body)
+        return variables, self.execute(body, variables)

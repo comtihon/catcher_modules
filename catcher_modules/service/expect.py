@@ -5,7 +5,16 @@ import catcher_modules.database
 
 class Expect(ExternalStep):
     """
-    High level test function.
+    This is the opposite for prepare. It compares expected data from csv to what you have in the database.
+    csv file supports templates.
+
+    **Important**:
+
+    * populate step is designed to be supported by all steps (in future). Currently it is supported only
+      by Postges/Oracle/MSSql/MySql/SQLite steps.
+    * Schema comparison is not implemented.
+    * You can use strict comparison (only data from csv should be in the table, in the same order as csv)
+      or the default one (just check if the data is there)
 
     :Input:
 

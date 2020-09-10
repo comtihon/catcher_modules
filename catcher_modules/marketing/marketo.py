@@ -5,7 +5,7 @@ from catcher.utils.logger import debug
 
 class Marketo(ExternalStep):
     """
-    Check data in Marketo
+    Allows you to read/write/delete leads in Adobe `Marketo <https://www.marketo.com>`_ marketing automation tool.
 
     :Config:
 

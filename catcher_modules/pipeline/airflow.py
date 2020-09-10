@@ -9,6 +9,9 @@ from catcher_modules.pipeline.airflow_utils import airflow_client, airflow_db_cl
 
 class Airflow(ExternalStep):
     """
+    Allows you to run dag sync/async, get xcom and populate connections in Apache `Airflow <https://airflow.apache.org/>`_
+    workflow management platform.
+
     :Input:
 
     :config: airflow config object
