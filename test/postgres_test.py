@@ -177,3 +177,31 @@ class PostgresTest(TestClass):
         self.assertTrue(runner.run_tests())
         response = self.get_values('foo')
         self.assertEqual([(2, 'test2@test.org')], response)
+
+    def test_populate_sql(self):
+        self.populate_file('resources/schema.sql', '''
+                                        CREATE TABLE if not exists foo(
+                                            user_id      integer    primary key,
+                                            email        varchar(36)    NOT NULL
+                                        );
+                                        {%- for user in users %}
+                                        insert into foo values ({{user.num}}, '{{user.email}}');
+                                        {%- endfor -%}
+                                        ''')
+        self.populate_file('main.yaml', '''---
+                                            variables:
+                                                users:
+                                                    - num: 1
+                                                      email: test1@test.org
+                                                    - num: 2
+                                                      email: test2@test.org
+                                            steps:
+                                                - postgres:
+                                                    request:
+                                                        conf: 'test:test@localhost:5433/test'
+                                                        sql: schema.sql
+                                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        response = self.get_values('foo')
+        self.assertEqual([(1, 'test1@test.org'), (2, 'test2@test.org')], response)

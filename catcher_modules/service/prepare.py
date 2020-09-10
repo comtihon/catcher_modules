@@ -7,7 +7,20 @@ from catcher_modules.utils import module_utils
 
 class Prepare(ExternalStep):
     """
-    High level test function. Populate or mock specific service with data.
+    Used for bulk actions to prepare test data. Is useful when you need to prepare a lot of data.
+    This step consists of 3 parts:
+
+    1. write sql ddl schema file (optional) - describe all tables/schemas/privileges needed to be created
+    2. prepare data in a csv file (optional)
+    3. call Catcher's prepare step to populate csv content into the database
+
+    Both sql schema and csv file supports templates.
+
+    **Important**:
+
+    * populate step is designed to be supported by all steps (in future). Currently it is supported only by
+      Postges/Oracle/MSSql/MySql/SQLite steps.
+    * to populate json as Postgres Json data type you need to use **use_json: true** flag
 
     :Input:
 

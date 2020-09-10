@@ -9,6 +9,8 @@ from catcher_modules.mq import MqStepMixin
 
 class Rabbit(ExternalStep, MqStepMixin):
     """
+    Allows you to consume/produce messages from/to `RabbitMQ <https://www.rabbitmq.com/>`_
+
     :Input:
 
     :config: rabbitmq config object, used in other rabbitmq commands.

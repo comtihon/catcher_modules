@@ -11,6 +11,8 @@ from catcher_modules.mq import MqStepMixin
 
 class Kafka(ExternalStep, MqStepMixin):
     """
+    Allows you to consume/produce messages from/to Apache `Kafka <https://kafka.apache.org/>`_
+
     :Input:
 
     :consume:  Consume message from kafka.

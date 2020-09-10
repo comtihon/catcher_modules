@@ -125,7 +125,10 @@ class CmdFactory:
 
 class Docker(ExternalStep):
     """
-    check logs
+    Allows you to start/stop/disconnect/connect/exec commands, get logs and statuses of
+    `Docker <https://www.docker.com/>`_ containers.
+    Is very useful when you need to run something like `Mockserver <https://www.mock-server.com/>`_
+    and/or simulate network disconnects.
 
     :Input:
 

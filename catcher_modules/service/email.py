@@ -20,7 +20,8 @@ class Message:
 
 class Email(ExternalStep):
     """
-    Send or receive email
+    Allows you to send and receive emails via `IMAP <https://en.wikipedia.org/wiki/Internet_Message_Access_Protocol>`_
+    protocol.
 
     :Config:
 
@@ -94,7 +95,7 @@ class Email(ExternalStep):
                   ack: true
                   limit: 2
 
-    Find unread message containing blog name in subject and register it's body
+    Find unread message containing blog name in subject and mark as read
     ::
 
         - email:

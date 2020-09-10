@@ -5,8 +5,10 @@ import os
 from abc import abstractmethod
 from io import StringIO
 from itertools import zip_longest
+from os.path import join
 from typing import List
 
+from catcher.utils.file_utils import read_file
 from catcher.utils.logger import debug
 from catcher.utils.misc import fill_template_str, try_get_objects
 
@@ -29,11 +31,15 @@ class SqlAlchemyDb:
     def table_info(self, table_name):
         pass
 
-    def execute(self, body: dict):
+    def execute(self, body: dict, variables: dict):
         in_data = body['request']
         conf = in_data['conf']
-        query = in_data['query']
-        return self.__execute(conf, query)
+        sql = in_data.get('sql', in_data.get('query'))
+        if sql is None:
+            raise Exception('Either sql or query param is required')
+        if sql.endswith('.sql'):
+            sql = fill_template_str(read_file(join(variables['RESOURCES_DIR'], sql)), variables)
+        return self.__execute(conf, sql)
 
     def populate(self, variables, conf=None, schema=None, data: dict = None, use_json=False, **kwargs):
         """
@@ -164,7 +170,7 @@ class SqlAlchemyDb:
         names = None
         for row in csv_reader:
             if line_count == 0:
-                names = row
+                names = [r.strip() for r in row]
                 line_count += 1
             else:
                 if use_json:
