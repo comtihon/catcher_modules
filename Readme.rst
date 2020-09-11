@@ -18,7 +18,7 @@ Catcher modules
 
 .. _Catcher: https://github.com/comtihon/catcher
 .. _built-in: https://catcher-test-tool.readthedocs.io/en/latest/source/internal_modules.html
-.. _external: https://catcher-test-tool.readthedocs.io/en/latest/source/modules.html#external
+.. _external: https://catcher-test-tool.readthedocs.io/en/latest/source/steps.html#external-modules
 
 Usage
 -----
