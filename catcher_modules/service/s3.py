@@ -66,7 +66,7 @@ class S3(ExternalStep):
             get:
                 config: '{{ s3_config }}'
                 path: /foo/bar/file.csv
-            register: {csv: '{{ OUTPUT }}'
+            register: {csv: '{{ OUTPUT }}'}
 
     List files
     ::
@@ -75,7 +75,7 @@ class S3(ExternalStep):
             list:
                 config: '{{ s3_config }}'
                 path: /foo/bar/
-            register: {files: '{{ OUTPUT }}'
+            register: {files: '{{ OUTPUT }}'}
 
     Delete file
     ::
