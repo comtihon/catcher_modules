@@ -5,8 +5,26 @@ from catcher.steps.step import update_variables
 
 class DockerCmd(metaclass=ABCMeta):
     @abstractmethod
-    def action(self, network):
+    def action(self, variables):
         pass
+
+
+class NetworkBasedCmd(metaclass=ABCMeta):
+    def __init__(self, network=None, **kwargs) -> None:
+        super().__init__()
+        self._network = network
+
+    def network(self, variables):
+        return self._ensure_network(self._network or variables['TEST_NAME'])
+
+    @staticmethod
+    def _ensure_network(name: str):
+        import docker
+        client = docker.from_env()
+        filtered = client.networks.list(names=[name])
+        if not filtered:
+            return client.networks.create(name, driver="bridge").id
+        return filtered[0].id
 
 
 class IdBasedCmd:
@@ -22,52 +40,60 @@ class IdBasedCmd:
 
 
 class StopCmd(IdBasedCmd, DockerCmd):
-    def action(self, network):
+    def action(self, variables):
         return self.get_container().stop()
 
 
 class StatusCmd(IdBasedCmd, DockerCmd):
-    def action(self, network):
+    def action(self, variables):
         return self.get_container().status
 
 
-class DisconnectCmd(IdBasedCmd, DockerCmd):
-    def action(self, network):
+class DisconnectCmd(IdBasedCmd, NetworkBasedCmd, DockerCmd):
+    def __init__(self, **kwargs: dict) -> None:
+        IdBasedCmd.__init__(self, **kwargs)
+        NetworkBasedCmd.__init__(self, **kwargs)
+
+    def action(self, variables):
         import docker
         client = docker.from_env()
         container = self.get_container()
         if not container or container.status == 'exited':
             raise ValueError('Container exited; Can\'t disconnect.')
-        return client.networks.get(network).disconnect(container)
+        return client.networks.get(self.network(variables)).disconnect(container)
 
 
-class ConnectCmd(IdBasedCmd, DockerCmd):
-    def action(self, network: str):
+class ConnectCmd(IdBasedCmd, NetworkBasedCmd,  DockerCmd):
+    def __init__(self, **kwargs: dict) -> None:
+        IdBasedCmd.__init__(self, **kwargs)
+        NetworkBasedCmd.__init__(self, **kwargs)
+
+    def action(self, variables: str):
         import docker
         client = docker.from_env()
         container = self.get_container()
         if not container or container.status == 'exited':
             raise ValueError('Container exited; can\'t connect.')
-        return client.networks.get(network).connect(container)
+        return client.networks.get(self.network(variables)).connect(container)
 
 
 class LogsCmd(IdBasedCmd, DockerCmd):
-    def action(self, network):
+    def action(self, variables):
         return self.get_container().logs().decode()
 
 
-class StartCmd(DockerCmd):
+class StartCmd(NetworkBasedCmd, DockerCmd):
     def __init__(self, image: str, **kwargs: dict) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         self._image = image
         self._name = kwargs.get('name')
         self._cmd = kwargs.get('cmd')
         self._detached = kwargs.get('detached', True)
         self._ports = kwargs.get('ports')
-        self._env = kwargs.get('environment', None)
+        self._env = kwargs.get('environment')
         self._volumes = kwargs.get('volumes', {})
 
-    def action(self, network):
+    def action(self, variables):
         import docker
         client = docker.from_env()
         volumes = dict([(k, {'bind': v, 'mode': 'rw'}) for k, v in self._volumes.items()])
@@ -75,7 +101,7 @@ class StartCmd(DockerCmd):
                                        self._cmd,
                                        name=self._name,
                                        detach=self._detached,
-                                       network=network,
+                                       network=self.network(variables),
                                        ports=self._ports,
                                        environment=self._env,
                                        volumes=volumes)
@@ -93,13 +119,13 @@ class ExecCmd(IdBasedCmd, DockerCmd):
         self._user = kwargs.get('user', 'root')
         self._env = kwargs.get('environment', None)
 
-    def action(self, network):
+    def action(self, variables):
         res = self.get_container().exec_run(cmd=self._cmd,
                                             workdir=self._dir,
                                             user=self._user,
                                             environment=self._env)
         if res.exit_code != 0:
-            raise res.output.decode()
+            raise Exception(res.output.decode())
         return res.output.decode()
 
 
@@ -141,6 +167,7 @@ class Docker(ExternalStep):
     - ports: dictionary of ports to bind. Keys - container ports, values - host ports.
     - environment: a dictionary of environment variables
     - volumes: a dictionary of volumes
+    - network: network name. *Optional* (default is current test's name)
 
     :stop: stop a container.
 
@@ -156,11 +183,13 @@ class Docker(ExternalStep):
 
     - name: container's name. *Optional*
     - hash: container's hash. *Optional* Either name or hash should present
+    - network: network name. *Optional* (default is current test's name)
 
     :connect: connect a container to a network. All containers share the same network per test.
 
     - name: container's name. *Optional*
     - hash: container's hash. *Optional* Either name or hash should present
+    - network: network name. *Optional* (default is current test's name)
 
     :exec: execute a command inside a running container.
 
@@ -260,16 +289,6 @@ class Docker(ExternalStep):
 
     @update_variables
     def action(self, includes: dict, variables: dict) -> dict or tuple:
-        network = self._ensure_network(variables['TEST_NAME'])
         cmd = CmdFactory.get_cmd(self.simple_input(variables))
-        out = cmd.action(network)
+        out = cmd.action(variables)
         return variables, out
-
-    @staticmethod
-    def _ensure_network(name: str):
-        import docker
-        client = docker.from_env()
-        filtered = client.networks.list(names=[name])
-        if not filtered:
-            return client.networks.create(name, driver="bridge").id
-        return filtered[0].id

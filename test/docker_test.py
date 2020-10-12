@@ -113,14 +113,16 @@ class DockerTest(TestClass):
                                                     POSTGRES_USER: user
                                                     POSTGRES_DB: test
                                             register: {hash: '{{ OUTPUT }}'}
-                                        - wait: {'seconds': 2}
-                                        - docker:
-                                            exec:
-                                                hash: '{{ hash }}'
-                                                cmd: >
-                                                    psql -U user -d test -c \
-                                                    "CREATE TABLE test(rno integer, name character varying)"
-                                            register: {create_result: '{{ OUTPUT.strip() }}'}
+                                        - wait:
+                                            seconds: 5
+                                            for:
+                                                - docker:
+                                                    exec:
+                                                        hash: '{{ hash }}'
+                                                        cmd: >
+                                                            psql -U user -d test -c \
+                                                            "CREATE TABLE test(rno integer, name character varying)"
+                                                    register: {create_result: '{{ OUTPUT.strip() }}'}
                                         - check:
                                             equals: {the: '{{ create_result }}', is: 'CREATE TABLE'}
                                         - docker:
