@@ -205,6 +205,12 @@ class Docker(ExternalStep):
     - name: container's name. *Optional*
     - hash: container's hash. *Optional* Either name or hash should present
 
+    :Useful hack:
+    if you are going to run docker step from a docker image - you'd need to mount your host's docker
+    ``/var/run/docker.sock`` directory to the catcher image. docker installation is not included in the catcher's docker
+    image to avoid docker-in-docker problem.
+
+
     :Examples:
 
     Run blocking command in a new container and check the output.
