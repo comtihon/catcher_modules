@@ -5,33 +5,43 @@ COPY catcher_modules catcher_modules
 COPY requirements.txt requirements.txt
 COPY setup.py setup.py
 
+RUN apt-get update \
+ && apt-get install -y curl gnupg
+
+## add couchbase repo
+RUN curl "https://packages.couchbase.com/clients/c/repos/deb/couchbase.key" | apt-key add  - \
+ && echo "deb https://packages.couchbase.com/clients/c/repos/deb/debian10 buster buster/main" > "/etc/apt/sources.list.d/couchbase.list"
+
+### add microsoft odbc repo
+RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+ && curl "https://packages.microsoft.com/keys/microsoft.asc" | apt-key add -
+
 ## database client libraries
 # client libraries for postgres, mysql, couchbase
-RUN apk update \
-  && apk add wget unzip gcc g++ curl zip bash unixodbc-dev postgresql-dev libcouchbase-dev libffi-dev mariadb-connector-c-dev \
-  && pip install Cython
-# client library for mssql
-RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.2.2-1_amd64.apk \
-    && apk add --allow-untrusted msodbcsql17_17.5.2.2-1_amd64.apk
+RUN apt-get update \
+ && ACCEPT_EULA=Y apt-get install -y unzip zip unixodbc-dev libpq-dev libcouchbase-dev libffi-dev libmariadb-dev msodbcsql17 \
+ && pip install Cython
 
 ## languages for external step support
 # install java
-RUN apk --no-cache add openjdk8
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+RUN apt-get install -y apt-transport-https ca-certificates wget dirmngr gnupg software-properties-common \
+ && curl "https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public" | apt-key add - \
+ && add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ \
+ && apt-get update \
+ && mkdir -p /usr/share/man/man1 \
+ && apt-get install -y adoptopenjdk-8-hotspot
+
+ENV JAVA_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV PATH="$JAVA_HOME/bin:${PATH}"
 # install kotlin
 RUN curl -s https://get.sdkman.io | bash
 RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install kotlin'
 ENV PATH="/root/.sdkman/candidates/kotlin/current/bin:${PATH}"
 # install node js
-RUN apk add --update nodejs npm
+RUN apt install -y nodejs npm
 
 ## browsers
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-2.30-r0.apk \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-bin-2.30-r0.apk
-RUN apk add glibc-2.30-r0.apk glibc-bin-2.30-r0.apk
-RUN apk add firefox-esr chromium
+RUN apt-get install -y firefox-esr chromium
 
 ## selenium drivers (firefox, chrome, opera)
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz \
