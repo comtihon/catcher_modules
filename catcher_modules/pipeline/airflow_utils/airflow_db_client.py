@@ -52,6 +52,19 @@ def check_dag_exists(dag_id, conf, dialect) -> bool:
         return found != []
 
 
+def unpause_dag(dag_id, conf, dialect) -> bool:
+    """
+    Unpause dag directly in the database. 
+    Please use airflow_client.unpause_dag (if your version of airflow supports it instead.
+    """
+    engine = db_utils.get_engine(conf, dialect)
+    with engine.connect() as connection:
+        result = connection.execute('''update dag set is_paused=false 
+                                       where dag_id = '{}'
+                                            '''.format(dag_id))
+        return result.rowcount == 1
+
+
 def check_import_errors(dag_id, conf, dialect):
     """
     Check if there was import error for the dag

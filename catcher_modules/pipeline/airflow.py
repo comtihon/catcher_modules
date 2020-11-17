@@ -3,6 +3,7 @@ from time import sleep
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables, Step
 from catcher.utils.logger import debug
+from catcher_modules.exceptions.airflow_exceptions import OldAirflowVersionException
 
 from catcher_modules.pipeline.airflow_utils import airflow_client, airflow_db_client
 
@@ -173,7 +174,11 @@ class Airflow(ExternalStep):
         if inventory is not None and config.get('populate_connections', False):
             # fill connections from inventory to airflow
             airflow_db_client.fill_connections(inventory, db_conf, backend, config['fernet_key'])
-        airflow_client.unpause_dag(url, dag_id)
+        try:
+            airflow_client.unpause_dag(url, dag_id)
+        except OldAirflowVersionException:
+            airflow_db_client.unpause_dag(dag_id, db_conf, backend)
+
 
     @staticmethod
     def _run_status(oper):

@@ -1,6 +1,7 @@
 import posixpath
 
 from catcher.utils.logger import debug
+from catcher_modules.exceptions.airflow_exceptions import OldAirflowVersionException
 from requests import request
 
 
@@ -22,6 +23,9 @@ def trigger_dag(aiflow_url, dag_id, dag_config):
 def unpause_dag(aiflow_url, dag_id):
     url = posixpath.join(aiflow_url, 'api/experimental/dags/{}/paused/false'.format(dag_id))
     r = request('GET', url)
+    if r.status_code == 404:  # old airflow, rest api is not suported
+        debug('Endpoint not found: ' + r.text)
+        raise OldAirflowVersionException('Can\'t unpause the dag {}'.format(dag_id))
     if r.status_code != 200:
         debug(r.text)
         raise Exception('Can\'t unpause dag: {}'.format(dag_id))
