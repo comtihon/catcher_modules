@@ -2,7 +2,7 @@ from time import sleep
 
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables, Step
-from catcher.utils.logger import debug
+from catcher.utils.logger import debug, warning
 from catcher_modules.exceptions.airflow_exceptions import OldAirflowVersionException
 
 from catcher_modules.pipeline.airflow_utils import airflow_client, airflow_db_client
@@ -144,19 +144,33 @@ class Airflow(ExternalStep):
         url = config['url']
         self._prepare_dag_run(dag_id, config, inventory)
         dag_config = oper.get('dag_config', {})
+
         run_id = airflow_client.trigger_dag(url, dag_id, dag_config)
         sync = oper.get('sync', False)
         if not sync:
             return run_id
         else:
             wait_timeout = oper.get('wait_timeout', 5)
-            execution_date = airflow_client.get_dag_run(url, dag_id, run_id)['execution_date']
-            state = self._wait_for_running(url, dag_id, execution_date, wait_timeout)
+            try:
+                execution_date = airflow_client.get_dag_run(url, dag_id, run_id)['execution_date']
+            except OldAirflowVersionException:
+                warning(f"Your airflow version does not support rest API method: dag_runs. Call backend db directly")
+                execution_date = airflow_db_client.get_execution_date_by_run_ud(run_id=run_id,
+                                                                                conf=db_conf,
+                                                                                dialect=backend)
+
+            state = self._wait_for_running(url=url,
+                                           dag_id=dag_id,
+                                           execution_date=execution_date,
+                                           timeout=wait_timeout,
+                                           run_id=run_id,
+                                           dialect=backend,
+                                           db_conf=db_conf)
             if state != 'success':
-                failed_task = airflow_db_client.get_failed_task(dag_id,
-                                                                execution_date,
-                                                                db_conf,
-                                                                backend)
+                failed_task = airflow_db_client.get_failed_task(dag_id=dag_id,
+                                                                execution_time=execution_date,
+                                                                conf=db_conf,
+                                                                dialect=backend)
                 raise Exception('Dag {} failed task {} with state {}'.format(dag_id, failed_task, state))
             return run_id
 
@@ -177,15 +191,15 @@ class Airflow(ExternalStep):
         try:
             airflow_client.unpause_dag(url, dag_id)
         except OldAirflowVersionException:
+            warning(f"Your airflow version does not support rest API method to unpause dag. Call backend db directly")
             airflow_db_client.unpause_dag(dag_id, db_conf, backend)
-
 
     @staticmethod
     def _run_status(oper):
         dag_id = oper['dag_id']
         run_id = oper['run_id']
-        aiflow_url = oper['config']['url']
-        return airflow_client.get_dag_run(aiflow_url, dag_id, run_id)
+        airflow_url = oper['config']['url']
+        return airflow_client.get_dag_run(airflow_url, dag_id, run_id)
 
     @staticmethod
     def _get_xcom(oper):
@@ -193,7 +207,7 @@ class Airflow(ExternalStep):
         run_id = oper.get('run_id')
         execution_date = oper.get('execution_date')
         if run_id is None and execution_date is None:
-            raise ValueError('Both run_id and execution_date are not specified!')
+            raise ValueError('Both run_id and execution_date not specified!')
         config = oper['config']
         db_conf = config['db_conf']
         dialect = config.get('backend', 'postgresql')
@@ -202,9 +216,14 @@ class Airflow(ExternalStep):
         return airflow_db_client.get_xcom(task_id, execution_date, db_conf, dialect)
 
     @staticmethod
-    def _wait_for_running(url, dag_id, execution_date, timeout):
+    def _wait_for_running(url, dag_id, execution_date, timeout, run_id, dialect=None, db_conf=None):
         while True:
-            state = airflow_client.get_run_status(url, dag_id, execution_date)
+            try:
+                state = airflow_client.get_run_status(url, dag_id, execution_date)
+            except OldAirflowVersionException:
+                warning(f"Your airflow version does not support rest API method for DAG status. Call backend db directly")
+                state = airflow_db_client.get_dag_run_by_run_ud(run_id=run_id, conf=db_conf, dialect=dialect)["state"]
+
             debug(state)
             if state.lower() != 'running':
                 return state.lower()
