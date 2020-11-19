@@ -35,6 +35,9 @@ Contribution
 If you believe your external python module can be useful for other people you can create a pull request here.
 You can find quick support in the telegram channel.
 
+Contributors:
+-------------
+* Many thanks to `Ekaterina Belova <https://github.com/kbelova>`_ for core & modules contribution.
 
 Additional dependencies
 -----------------------
