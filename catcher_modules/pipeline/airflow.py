@@ -154,7 +154,7 @@ class Airflow(ExternalStep):
             try:
                 execution_date = airflow_client.get_dag_run(url, dag_id, run_id)['execution_date']
             except OldAirflowVersionException:
-                warning(f"Your airflow version does not support rest API method: dag_runs. Call backend db directly")
+                warning("Your airflow version does not support rest API method: dag_runs. Call backend db directly")
                 execution_date = airflow_db_client.get_execution_date_by_run_ud(run_id=run_id,
                                                                                 conf=db_conf,
                                                                                 dialect=backend)
@@ -191,7 +191,7 @@ class Airflow(ExternalStep):
         try:
             airflow_client.unpause_dag(url, dag_id)
         except OldAirflowVersionException:
-            warning(f"Your airflow version does not support rest API method to unpause dag. Call backend db directly")
+            warning("Your airflow version does not support rest API method to unpause dag. Call backend db directly")
             airflow_db_client.unpause_dag(dag_id, db_conf, backend)
 
     @staticmethod
@@ -221,7 +221,7 @@ class Airflow(ExternalStep):
             try:
                 state = airflow_client.get_run_status(url, dag_id, execution_date)
             except OldAirflowVersionException:
-                warning(f"Your airflow version does not support rest API method for DAG status. Call backend db directly")
+                warning("Your airflow version does not support rest API method for DAG status. Call backend db directly")
                 state = airflow_db_client.get_dag_run_by_run_ud(run_id=run_id, conf=db_conf, dialect=dialect)["state"]
 
             debug(state)
