@@ -19,6 +19,22 @@ def get_failed_task(dag_id, execution_time, conf, dialect):
             return None
 
 
+def get_dag_run_by_run_ud(run_id, conf, dialect):
+    engine = db_utils.get_engine(conf, dialect)
+    with engine.connect() as connection:
+        result = connection.execute("""
+        SELECT dag_id, execution_date, state, run_id, external_trigger, conf, end_date, start_date
+        FROM dag_run 
+        WHERE run_id = '{}'
+        """.format(run_id))
+        rows = [dict(r) for r in result.fetchall()]
+
+        if not rows:
+            raise Exception('Can\'t get dag_run info by run_id {}'.format(run_id))
+
+        return rows[0]
+
+
 def get_execution_date_by_run_ud(run_id, conf, dialect):
     engine = db_utils.get_engine(conf, dialect)
     with engine.connect() as connection:
