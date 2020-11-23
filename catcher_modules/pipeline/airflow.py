@@ -222,7 +222,9 @@ class Airflow(ExternalStep):
                 state = airflow_client.get_run_status(url, dag_id, execution_date)
             except OldAirflowVersionException:
                 warning("Your airflow version does not support rest API method for DAG status. Call backend db directly")
-                state = airflow_db_client.get_dag_run_by_run_ud(run_id=run_id, conf=db_conf, dialect=dialect)["state"]
+                state = airflow_db_client.get_dag_run_by_run_ud(run_id=run_id,
+                                                                conf=db_conf,
+                                                                dialect=dialect)["state"]
 
             debug(state)
             if state.lower() != 'running':
