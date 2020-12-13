@@ -12,19 +12,50 @@ default_ports = {
 
 
 def get_engine(conf: Union[str, dict], dialect: str = 'postgresql', driver: str = None):
-    if not isinstance(conf, str):
-        conf_str = '{}://{}:{}@{}:{}/{}'.format(dialect,
-                                                conf['user'],
-                                                conf['password'],
-                                                conf['host'],
-                                                conf.get('port', default_ports.get(dialect.lower(), '')),
-                                                conf['dbname'])
-        if driver is not None and 'driver' not in conf_str:  # pyodbc
-            conf_str += '?driver={}'.format(driver.replace(' ', '+'))
-    else:
+    """
+    :param conf: there are 3 options for configuring a database connection.
+      1. String configuration. All parameters are included in single string:
+         postgres:postgres@custom_postgres_1:5432/postgres
+      2. String-object configuration. All parameters are included in single string under param `url`. Object contains
+         other parameters:
+             psql_conf:
+                url: 'postgres:postgres@custom_postgres_1:5432/postgres'
+                extra: '{"key": "value"}'
+                type: 'postgres'
+      3. Object configuratoin. All parameters are separated in the object.
+         psql_conf:
+            dbname: test
+            user: user
+            password: password
+            host: localhost
+            port: 5433
+            extra: '{"key": "value"}'
+            type: 'postgres'
+    :param dialect: dialect configuration for sqlalchemy.
+    :param driver: driver configuration for pyodbc. Optional
+    """
+
+    if not isinstance(conf, str):  # object or string-object representation
+        if 'url' not in conf:  # object
+            conf_str = __construct_str_configuration(conf, dialect)
+        else:  # string-object
+            conf_str = __fill_dialect(conf['url'], dialect)
+    else:  # string representation
         conf_str = __fill_dialect(conf, dialect)
+
+    if driver is not None and 'driver' not in conf_str:  # pyodbc
+        conf_str += '?driver={}'.format(driver.replace(' ', '+'))
     from sqlalchemy import create_engine
     return create_engine(conf_str)
+
+
+def __construct_str_configuration(conf, dialect):
+    return '{}://{}:{}@{}:{}/{}'.format(dialect,
+                                        conf['user'],
+                                        conf['password'],
+                                        conf['host'],
+                                        conf.get('port', default_ports.get(dialect.lower(), '')),
+                                        conf['dbname'])
 
 
 def __fill_dialect(url: str, driver: str):

@@ -2,6 +2,8 @@ import os
 import unittest
 from os.path import join
 
+from test import resources
+
 import test
 from catcher.utils import logger
 from catcher.utils.logger import get_logger
@@ -37,6 +39,10 @@ class TestClass(unittest.TestCase):
     def populate_file(self, file: str, content: str):
         with open(join(self.test_dir, file), 'w') as f:
             f.write(content)
+
+    @property
+    def global_resource_dir(self):  # global resource dir (part of project)
+        return os.path.dirname(resources.__file__)
 
     def get_values(self, table):
         with self.connection as conn:

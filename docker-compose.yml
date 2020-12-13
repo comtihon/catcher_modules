@@ -86,5 +86,29 @@ services:
         - ./test/rabbit-config/server_certificate.pem:/etc/rabbitmq/certs/server_certificate.pem
         - ./test/rabbit-config/server_key.pem:/etc/rabbitmq/certs/server_key.pem
 
+  webserver:
+    image: puckel/docker-airflow:1.10.4
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+      - FERNET_KEY=zp8kV516l9tKzqq9pJ2Y6cXbM3bgEWIapGwzQs6jio4=
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+      - ./requirements.txt:/requirements.txt
+    ports:
+      - "8080:8080"
+    command: webserver
+    healthcheck:
+      test: [ "CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
 volumes:
   data:

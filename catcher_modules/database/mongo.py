@@ -7,7 +7,7 @@ class Mongo(ExternalStep):
     Allows you to interact with `MongoDB <https://www.mongodb.com/>`_ NoSQL database.
     :Input:
 
-    :conf:  mongodb configuration. Can be a single line
+    :conf:  mongodb configuration. Can be a single line, object or object with url as a parameter (for Airflow connection)
 
     `string <https://docs.mongodb.com/manual/reference/connection-string/>`_ url or kv object. **Required**.
 
@@ -48,6 +48,27 @@ class Mongo(ExternalStep):
               collection: 'your_collection'
               command: 'find_one'
           register: {document: '{{ OUTPUT }}'}
+
+    Use object configuration with extra fields (for Airflow connection). This step will ignore everything except url.
+    Inventory.yaml ::
+
+        mongo_conf:
+            url: 'mongodb://username:password@host'
+            type: 'mongo'
+            extra: '{"key":"value"}'
+
+    mongo step itself ::
+
+        mongo:
+            request:
+                conf: '{{ mongo_conf }}'
+                collection: 'your_collection'
+                command: 'find_one'
+
+    See more info about connections population in Catcher-Airflow
+    `docs https://catcher-modules.readthedocs.io/en/latest/source/airflow.html`_
+
+    Alternatively you can use ``conf: '{{ mongo_conf.url }}'``.
 
     Insert into test, using string configuration
     ::
@@ -169,15 +190,23 @@ class Mongo(ExternalStep):
         if isinstance(conf, str):  # url
             client = MongoClient(conf)
             database = client.get_database('test')
+        elif 'url' in conf:
+            client = MongoClient(conf['url'])
+            database = client.get_database('test')
         else:
             database = conf.pop('database', 'test')
+            conf.pop('type', None)  # removes airflow step specific field
+            conf.pop('extra', None)  # removes airflow step specific field
             client = MongoClient(**conf)
             database = client.get_database(database)
             if database is None and conf['database'] is not None:
                 database = client.get_database(conf['database'])
-        action = Action(in_data)
-        result = action(database[collection])
-        return variables, result
+        try:
+            action = Action(in_data)
+            result = action(database[collection])
+            return variables, result
+        finally:
+            client.close()
 
 
 class Action:

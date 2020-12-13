@@ -21,8 +21,12 @@ class Airflow(ExternalStep):
       See `db_utils https://github.com/comtihon/catcher_modules/blob/master/catcher_modules/utils/db_utils.py#L3`_
     - db_conf: see db_conf object. **Required**.
     - url: airflow url. **Required**.
-    - populate_connections: fill in airflow connections from current inventory file. **Optional** (default is false)
-    - fernet_key: fernet key. Used with populate_connections. **Optional**
+    - populate_connections: fill in airflow connections during ``run`` operarion from the current inventory file.
+       **Optional** (default is false)
+    - fernet_key: fernet key. Used with populate_connections=true. **Optional**
+
+    See more info about connections population in Catcher-Airflow
+    `docs https://catcher-modules.readthedocs.io/en/latest/source/airflow.html`_
 
     :db_conf: airflow db backend configuration.
 

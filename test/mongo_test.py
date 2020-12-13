@@ -52,6 +52,39 @@ class MongoTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
 
+    def test_different_configurations(self):
+        self.populate_file('test_inventory.yml', '''
+                mongo_object:
+                    database: test
+                    username: test
+                    password: test
+                    host: localhost
+                    port: 27017
+                    type: mongo
+                mongo_string: 'mongodb://test:test@localhost:27017'
+                mongo_object_string:
+                    url: 'mongodb://test:test@localhost:27017'
+                    type: mongo
+                ''')
+
+        self.populate_file('main.yaml', '''---
+                    steps:
+                        - loop:
+                            foreach:
+                                in: '[{{ mongo_object }}, "{{ mongo_string }}", {{ mongo_object_string }}]'
+                                do:
+                                    - mongo:
+                                        request:
+                                            conf: '{{ ITEM }}'
+                                            collection: 'test'
+                                            command: 'find_one'
+                                        register: {document: '{{ OUTPUT }}'}
+                                    - check:
+                                        equals: {the: '{{ document["msg"] }}', is: "one"}
+                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
+        self.assertTrue(runner.run_tests())
+
     def test_write_simple_query(self):
         self.populate_file('test_inventory.yml', '''
         mongo:
