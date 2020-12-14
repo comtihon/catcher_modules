@@ -1,5 +1,5 @@
 .. image:: https://travis-ci.com/comtihon/catcher_modules.svg?branch=master
-    :target: https://travis-ci.org/comtihon/catcher_modules
+    :target: https://travis-ci.com/comtihon/catcher_modules
 .. image:: https://img.shields.io/pypi/v/catcher_modules.svg
     :target: https://pypi.python.org/pypi/catcher_modules
 .. image:: https://img.shields.io/pypi/pyversions/catcher_modules.svg
