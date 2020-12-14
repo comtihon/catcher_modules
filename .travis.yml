@@ -1,11 +1,12 @@
 dist: bionic
 language: python
-sudo: true
 python:
   - '3.5'
   - '3.6'
   - '3.7'
   - '3.8'
+services:
+  - docker
 before_install:
 - sudo docker pull jamesdbloom/mockserver
 - curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
