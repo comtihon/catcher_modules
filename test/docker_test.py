@@ -107,7 +107,7 @@ class DockerTest(TestClass):
                                     steps:
                                         - docker: 
                                             start: 
-                                                image: 'postgres:alpine'
+                                                image: 'postgres:11-alpine'
                                                 environment:
                                                     POSTGRES_PASSWORD: test
                                                     POSTGRES_USER: user

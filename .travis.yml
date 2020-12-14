@@ -10,7 +10,7 @@ services:
 before_install:
 - docker pull jamesdbloom/mockserver
 - docker pull alpine:latest
-- docker pull postgres:alpine
+- docker pull postgres:11-alpine
 - curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 - sudo curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list -o /etc/apt/sources.list.d/mssql-release.list
 - sudo apt-get update
