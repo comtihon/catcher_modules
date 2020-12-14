@@ -8,7 +8,8 @@ python:
 services:
   - docker
 before_install:
-- sudo docker pull jamesdbloom/mockserver
+- docker pull jamesdbloom/mockserver
+- docker pull alpine:latest
 - curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 - sudo curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list -o /etc/apt/sources.list.d/mssql-release.list
 - sudo apt-get update
