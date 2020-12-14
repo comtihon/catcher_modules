@@ -1,3 +1,3 @@
 APPNAME = 'catcher-modules'
 APPAUTHOR = 'Valerii Tikhonov, Ekaterina Belova'
-APPVSN = '5.2.4'
+APPVSN = '5.3.1'
