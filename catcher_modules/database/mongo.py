@@ -199,8 +199,6 @@ class Mongo(ExternalStep):
             conf.pop('extra', None)  # removes airflow step specific field
             client = MongoClient(**conf)
             database = client.get_database(database)
-            if database is None and conf['database'] is not None:
-                database = client.get_database(conf['database'])
         try:
             action = Action(in_data)
             result = action(database[collection])

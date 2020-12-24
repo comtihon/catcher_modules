@@ -50,12 +50,17 @@ def get_engine(conf: Union[str, dict], dialect: str = 'postgresql', driver: str 
 
 
 def __construct_str_configuration(conf, dialect):
-    return '{}://{}:{}@{}:{}/{}'.format(dialect,
-                                        conf['user'],
-                                        conf['password'],
-                                        conf['host'],
-                                        conf.get('port', default_ports.get(dialect.lower(), '')),
-                                        conf['dbname'])
+    port = conf.get('port', default_ports.get(dialect.lower()))
+    if port is None:
+        port = ''
+    else:
+        port = ':{}'.format(port)
+    return '{}://{}:{}@{}{}/{}'.format(dialect,
+                                       conf['user'],
+                                       conf['password'],
+                                       conf['host'],
+                                       port,
+                                       conf['dbname'])
 
 
 def __fill_dialect(url: str, driver: str):
