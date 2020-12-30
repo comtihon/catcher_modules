@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from catcher.steps.external_step import ExternalStep
 from catcher.steps.step import update_variables
+from catcher.utils.logger import debug
 
 
 class DockerCmd(metaclass=ABCMeta):
@@ -40,8 +41,17 @@ class IdBasedCmd:
 
 
 class StopCmd(IdBasedCmd, DockerCmd):
+    def __init__(self, delete=False, **kwargs: dict) -> None:
+        IdBasedCmd.__init__(self, **kwargs)
+        self.delete = delete
+
     def action(self, variables):
-        return self.get_container().stop()
+        container = self.get_container()
+        res = container.stop()
+        if self.delete:
+            debug('Removing {}'.format(container.name))
+            container.remove()
+        return res
 
 
 class StatusCmd(IdBasedCmd, DockerCmd):
@@ -173,6 +183,7 @@ class Docker(ExternalStep):
 
     - name: container's name. *Optional*
     - hash: container's hash. *Optional* Either name or hash should present
+    - delete: delete a container. *Optional* (default is false)
 
     :status: get the container status.
 

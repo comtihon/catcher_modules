@@ -1,6 +1,7 @@
 import os
 from os.path import join
 
+import docker
 import pytest
 
 from test.abs_test_class import TestClass
@@ -85,6 +86,26 @@ class DockerTest(TestClass):
                             ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
+
+    def test_stop_and_remove(self):
+        self.populate_file('main.yaml', '''---
+                                    steps:
+                                        - docker: 
+                                            start: 
+                                                image: 'jamesdbloom/mockserver'
+                                                ports:
+                                                    '1080/tcp': 8001
+                                                name: mockserver
+                                        - docker:
+                                            stop:
+                                                name: mockserver
+                                                delete: true            
+                                    ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        client = docker.from_env()
+        with pytest.raises(docker.errors.NotFound):
+            client.containers.get('mockserver')
 
     def test_get_logs(self):
         self.populate_file('main.yaml', '''---
