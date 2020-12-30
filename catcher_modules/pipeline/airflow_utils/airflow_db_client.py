@@ -1,7 +1,9 @@
 import json
+from typing import Tuple
 
 from catcher.utils import file_utils
-from catcher.utils.logger import debug
+from catcher.utils.logger import debug, warning
+from sqlalchemy.exc import ArgumentError
 
 from catcher_modules.utils import db_utils
 
@@ -107,15 +109,18 @@ def fill_connections(inventory, conf, dialect, fernet_key):
     with engine.connect() as connection:
         for name, value in inv_dict.items():
             try:
-                if _check_conn_id_exists(name, connection):
-                    raise Exception('Already exists')
-                if isinstance(value, str):  # conn_id: 'drivername://username:password@host:port/database'
-                    connection.execute(_prepare_url(name, value, fernet_key))
-                else:  # conn_id: extras object (aws)
-                    connection.execute(_prepare_extras(name, value))
-                debug('{} added'.format(name))
+                if isinstance(value, dict) and 'type' in value:
+                    if _check_conn_id_exists(name, connection):
+                        debug('{} already exists'.format(name))
+                        continue
+                    query, params = _prepare_connection(value, fernet_key)
+                    from sqlalchemy.sql import text
+                    connection.execute(text(query), name=name, **params)
+                    debug('{} added'.format(name))
+                else:
+                    debug('{} ignored. No type specified'.format(name))
             except Exception as e:
-                debug('Can\'t add {}:{} - {}'.format(name, value, e))
+                warning('Can\'t add {}:{} - {}'.format(name, value, e))
 
 
 def _get_dag_id_by_task_id(task_id, connection):
@@ -133,34 +138,54 @@ def _check_conn_id_exists(conn_id, connection) -> bool:
     return result != [(0,)]
 
 
-def _prepare_url(name, value, fernet_key) -> str:
-    from sqlalchemy.engine.url import make_url
+def _prepare_connection(value, fernet_key) -> Tuple[str, dict]:
+    conn_type = value['type']
     from cryptography.fernet import Fernet
     f = Fernet(fernet_key.encode())
-    url = make_url(value)
+    db_config = value
+    if 'url' in value:  # url based configuration
+        db_config = {**db_config, **_string_url_to_object(conn_type, value['url'], f)}
+    else:  # object based configuration (without url)
+        if 'password' in db_config:
+            db_config['password'] = f.encrypt(db_config['password'].encode()).decode()
+    _unify_config(conn_type, db_config)
+    if 'extra' in db_config and db_config['extra'] is not None:  # encode extra if exists
+        db_config['extra'] = f.encrypt(db_config['extra'].encode()).decode()
+    return '''insert into 
+              connection(conn_id,conn_type,host,schema,login,password,port,extra,is_encrypted,is_extra_encrypted)
+              values(:name,:type,:host,:dbname,:user,:password,:port,:extra,true,true)''', db_config
+
+
+def _unify_config(conn_type: str, config: dict):
+    if conn_type == 'mongo':
+        config['dbname'] = config.pop('database', config.get('dbname', 'test'))
+        config['user'] = config.pop('username', config.get('user'))
+        if not config['dbname']:
+            config['dbname'] = 'test'  # test if default database for Mongo
+    if conn_type == 'aws' and 'extra' not in config:  # construct aws extra based on conf if extra not specified
+        config.pop('host')  # minio host is encrypted in extra, shouldn't be taken from url
+        config['extra'] = json.dumps({'host': config.get('url'),
+                                      'aws_access_key_id': config.get('key_id'),
+                                      'aws_secret_access_key': config.get('secret_key'),
+                                      'region_name': config.get('region')})
+    for field in ['host', 'dbname', 'user', 'password', 'port', 'extra']:  # to make sqlalchemy matcher happy
+        if field not in config:
+            config[field] = None
+
+
+def _string_url_to_object(conn_type: str, url_str: str, fernet) -> dict:
+    from sqlalchemy.engine.url import make_url
+    try:
+        url = make_url(url_str)
+    except ArgumentError:
+        debug('Can\'t parse {}. Will try {}'.format(url_str, conn_type + '://' + url_str))
+        return _string_url_to_object(conn_type, conn_type + '://' + url_str, fernet)
     if url.password_original is not None:
-        password = f.encrypt(url.password_original.encode()).decode()
+        password = fernet.encrypt(url.password_original.encode()).decode()
     else:
         password = None
-    return '''insert into connection(conn_id,conn_type,host,schema,login,password,port,is_encrypted)
-                         values('{}','{}','{}','{}','{}','{}',{},true)'''.format(name,
-                                                                                 url.drivername.split('+')[0],
-                                                                                 url.host,
-                                                                                 url.database or None,
-                                                                                 url.username,
-                                                                                 password,
-                                                                                 url.port)
-
-
-def _prepare_extras(name, value) -> str:
-    if name.lower().startswith('s3') and 'key_id' in value and 'secret_key' in value:  # s3/minio
-        # rename key_id & secret_key
-        return '''insert into connection(conn_id,conn_type,extra)
-                  values('{}','{}','{}')'''.format(name, 'aws',
-                                                   json.dumps({'host': value.get('url'),
-                                                               'aws_access_key_id': value.get('key_id'),
-                                                               'aws_secret_access_key': value.get('secret_key'),
-                                                               'region_name': value.get('region')}))
-    else:  # some other extras
-        return '''insert into connection(conn_id,conn_type,extra)
-                    values('{}','{}','{}')'''.format(name, value.get('type'), json.dumps(value))
+    return dict(host=url.host,
+                dbname=url.database or None,
+                user=url.username,
+                password=password,
+                port=url.port)

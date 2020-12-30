@@ -64,20 +64,34 @@ class PostgresTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
 
-    def test_str_conf(self):
+    def test_different_conf(self):
         self.populate_file('test_inventory.yml', '''
-        postgres: 'test:test@localhost:5433/test'
+        postgres_str: 'test:test@localhost:5433/test'
+        postgres_str_obj:
+            url: 'test:test@localhost:5433/test'
+            type: postgres
+        postgres_obj:
+            dbname: 'test'
+            user: 'test'
+            password: 'test'
+            host: 'localhost'
+            port: 5433
+            type: 'postgres'
         ''')
 
         self.populate_file('main.yaml', '''---
                 steps:
-                    - postgres:
-                        request:
-                            conf: '{{ postgres }}'
-                            query: 'select count(*) from test'
-                        register: {documents: '{{ OUTPUT }}'}
-                    - check:
-                        equals: {the: '{{ documents.count }}', is: 2}
+                    - loop:
+                        foreach:
+                            in: '[{{ postgres_str_obj }}, "{{ postgres_str }}", {{ postgres_obj }}]'
+                            do:   
+                                - postgres:
+                                    request:
+                                        conf: '{{ ITEM }}'
+                                        query: 'select count(*) from test'
+                                    register: {documents: '{{ OUTPUT }}'}
+                                - check:
+                                    equals: {the: '{{ documents.count }}', is: 2}
                 ''')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())

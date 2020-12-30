@@ -1,4 +1,5 @@
 import posixpath
+from typing import Union
 
 from catcher.utils.logger import debug
 from catcher_modules.exceptions.airflow_exceptions import OldAirflowVersionException
@@ -51,7 +52,7 @@ def get_dag_run(aiflow_url: str, dag_id: str, run_id: str) -> dict:
     return list(dag_run)[0]
 
 
-def get_run_status(aiflow_url: str, dag_id: str, execution_date: str) -> str:
+def get_run_status(aiflow_url: str, dag_id: str, execution_date: Union[str, datetime.datetime]) -> str:
     """
     Obtain pipeline status depends on dag_id and execution_date
     :param aiflow_url:
@@ -60,7 +61,10 @@ def get_run_status(aiflow_url: str, dag_id: str, execution_date: str) -> str:
     :return: dag state (success, running, failed)
     """
     date_format = "%Y-%m-%dT%H:%M:%S"
-    date_fmt = execution_date.strftime(date_format)
+    if isinstance(execution_date, datetime.datetime):
+        date_fmt = execution_date.strftime(date_format)
+    else:
+        date_fmt = execution_date
 
     url = posixpath.join(aiflow_url, 'api/experimental/dags/{}/dag_runs/{}'.format(dag_id, date_fmt))
     r = request('GET', url)
