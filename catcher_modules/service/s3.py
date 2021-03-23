@@ -178,8 +178,11 @@ class S3(ExternalStep):
                              aws_secret_access_key=conf['secret_key'],
                              region_name=conf.get('region')
                              )
-        obj = res.Object(bucket, filename)
-        obj.delete()
+        if not filename:
+            res.Bucket(bucket).delete()
+        else:
+            obj = res.Object(bucket, filename)
+            obj.delete()
 
     @staticmethod
     def _check_response(res):
