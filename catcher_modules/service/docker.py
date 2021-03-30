@@ -59,6 +59,11 @@ class StatusCmd(IdBasedCmd, DockerCmd):
         return self.get_container().status
 
 
+class InspectCmd(IdBasedCmd, DockerCmd):
+    def action(self, variables):
+        return self.get_container().attrs
+
+
 class DisconnectCmd(IdBasedCmd, NetworkBasedCmd, DockerCmd):
     def __init__(self, **kwargs: dict) -> None:
         IdBasedCmd.__init__(self, **kwargs)
@@ -156,6 +161,8 @@ class CmdFactory:
             return DisconnectCmd(**command['disconnect'])
         if 'logs' in command:
             return LogsCmd(**command['logs'])
+        if 'inspect' in command:
+            return InspectCmd(**command['inspect'])
         raise ValueError('Unknown command: ' + str(command))
 
 
@@ -212,6 +219,11 @@ class Docker(ExternalStep):
     - environment: a dictionary of environment variables
 
     :logs: get container's logs.
+
+    - name: container's name. *Optional*
+    - hash: container's hash. *Optional* Either name or hash should present
+
+    :inspect: get container's inspect information
 
     - name: container's name. *Optional*
     - hash: container's hash. *Optional* Either name or hash should present
