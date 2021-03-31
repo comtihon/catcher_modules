@@ -125,6 +125,24 @@ class DockerTest(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
 
+    def test_inspect(self):
+        self.populate_file('main.yaml', '''---
+                            steps:
+                                - docker: 
+                                    start: 
+                                        image: 'alpine'
+                                        cmd: 'echo hello world'
+                                    register: {id: '{{ OUTPUT }}'}
+                                - docker:
+                                    inspect:
+                                        hash: '{{ id }}'
+                                    register: {args: '{{ OUTPUT["Args"] }}'}
+                                - check:
+                                    equals: {the: '{{ args }}', is: ['hello', 'world']}
+                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+
     @pytest.mark.skip(reason="Stopped working in travis")
     def test_exec(self):
         self.populate_file('main.yaml', '''---
