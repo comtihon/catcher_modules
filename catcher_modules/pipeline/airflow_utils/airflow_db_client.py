@@ -143,11 +143,13 @@ def _prepare_connection(value, fernet_key) -> Tuple[str, dict]:
     from cryptography.fernet import Fernet
     f = Fernet(fernet_key.encode())
     db_config = value
-    if 'url' in value:  # url based configuration
+    if 'url' in value and conn_type not in ['http', 'https', 'ftp', 'sftp']:  # database url based configuration
         db_config = {**db_config, **_string_url_to_object(conn_type, value['url'], f)}
-    else:  # object based configuration (without url)
+    else:  # object based configuration (without url) or http/ftp
         if 'password' in db_config:
             db_config['password'] = f.encrypt(db_config['password'].encode()).decode()
+        if 'url' in value and conn_type in ['http', 'https', 'ftp', 'sftp']:  # http/ftp based connection
+            db_config['host'] = db_config['url']
     _unify_config(conn_type, db_config)
     if 'extra' in db_config and db_config['extra'] is not None:  # encode extra if exists
         db_config['extra'] = f.encrypt(db_config['extra'].encode()).decode()
