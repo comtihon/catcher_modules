@@ -1,3 +1,21 @@
+# 5.4.0
+## New
+* Salesforce step.
+
+# 5.3.0
+## New
+* airflow connection population improved
+* docker stop with delete option
+* docker inspect
+
+# 5.2.0
+## New
+* **sql** param for sql-based databases. Deprecated **query** parameter.
+
+# 5.1.0
+## New
+* Selenium step
+
 # 5.0.0
 ## Incompatible changes:
 * mssql step uses pyodbc instead of pymssql, as it is not maintained anymore.

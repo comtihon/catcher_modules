@@ -49,3 +49,10 @@ catcher\_modules.service.email module
 .. autoclass:: catcher_modules.service.email.Email
     :members:
     :exclude-members: action
+
+catcher\_modules.service.salesforce module
+---------------------------------------
+
+.. autoclass:: catcher_modules.service.salesforce.Salesforce
+    :members:
+    :exclude-members: action
