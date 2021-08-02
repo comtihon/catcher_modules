@@ -74,7 +74,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e "file://`pwd`#egg=catcher[compose]"
+          pip install -e "file://`pwd`#egg=catcher_modules"
       - name: Test with pytest
         run: |
           pytest
