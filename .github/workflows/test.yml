@@ -14,28 +14,41 @@ jobs:
           POSTGRES_PASSWORD: "test"
           POSTGRES_USER: "test"
           POSTGRES_DB: "test"
+        ports:
+          - "5433:5432"
       redis:
         image: redis
+        ports:
+          - "6379:6379"
       kafka:
         image: spotify/kafka
         env:
           ADVERTISED_HOST: "localhost"
           ADVERTISED_PORT: "9092"
+        ports:
+          - "2181:2181"
+          - "9092:9092"
       mongo:
         image: mongo
         env:
           MONGO_INITDB_ROOT_USERNAME: "test"
           MONGO_INITDB_ROOT_PASSWORD: "test"
+        ports:
+          - "27017:27017"
       mssql:
         image: mcr.microsoft.com/mssql/server:2017-latest
         env:
           ACCEPT_EULA: "Y"
           SA_PASSWORD: "Test1234"
+        ports:
+          - "1433:1433"
       mysql:
         image: mysql
         env:
           MYSQL_ROOT_PASSWORD: "test"
           MYSQL_DATABASE: "test"
+        ports:
+          - "3307:3306"
       elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
         env:
@@ -46,15 +59,23 @@ jobs:
           cluster.initial_master_nodes: "test"
           discovery.zen.ping.unicast.hosts: "elasticsearch"
           http.max_content_length: "5mb"
+        ports:
+          - "9200:9200"
       minio:
         image: bitnami/minio:latest
         env:
           MINIO_ACCESS_KEY: minio
           MINIO_SECRET_KEY: minio123
         options: --name minio-server
+        ports:
+          - "9001:9000"
       catcher-rabbit:
         image: rabbitmq:3.7.18-management
-
+        ports:
+          - 5672:5672
+          - 5671:5671
+          - 15672:15672
+          - 15671:15671
     strategy:
       fail-fast: false
       matrix:
