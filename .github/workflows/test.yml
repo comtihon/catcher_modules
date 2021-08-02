@@ -55,10 +55,10 @@ jobs:
       catcher-rabbit:
         image: rabbitmq:3.7.18-management
         volumes:
-          - $GITHUB_WORKSPACE/test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-          - $GITHUB_WORKSPACE/test/rabbit-config/ca_certificate.pem:/etc/rabbitmq/certs/ca_certificate.pem
-          - $GITHUB_WORKSPACE/test/rabbit-config/server_certificate.pem:/etc/rabbitmq/certs/server_certificate.pem
-          - $GITHUB_WORKSPACE/test/rabbit-config/server_key.pem:/etc/rabbitmq/certs/server_key.pem
+          - ${{ GITHUB_WORKSPACE }}/test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+          - ${{ GITHUB_WORKSPACE }}/test/rabbit-config/ca_certificate.pem:/etc/rabbitmq/certs/ca_certificate.pem
+          - ${{ GITHUB_WORKSPACE }}/test/rabbit-config/server_certificate.pem:/etc/rabbitmq/certs/server_certificate.pem
+          - ${{ GITHUB_WORKSPACE }}/test/rabbit-config/server_key.pem:/etc/rabbitmq/certs/server_key.pem
 
     strategy:
       fail-fast: false
