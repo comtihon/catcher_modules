@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run rabbit  # not able to set up rabbit via services because certificates appear only at checkout
-        run: docker-compose up rabbit -d
+        run: docker-compose up -d rabbit
       - name: Install msodbcsql17
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
