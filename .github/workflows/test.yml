@@ -52,7 +52,7 @@ jobs:
           MINIO_ACCESS_KEY: minio
           MINIO_SECRET_KEY: minio123
         options: --name minio-server
-      catcher-rabbit:
+      rabbit:
         image: rabbitmq:3.7.18-management
         volumes:
           - ./test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
