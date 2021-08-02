@@ -54,8 +54,6 @@ jobs:
         options: --name minio-server
       catcher-rabbit:
         image: rabbitmq:3.7.18-management
-        options:
-          - v
         volumes:
           - $GITHUB_WORKSPACE/test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
           - $GITHUB_WORKSPACE/test/rabbit-config/ca_certificate.pem:/etc/rabbitmq/certs/ca_certificate.pem
