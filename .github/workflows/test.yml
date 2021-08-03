@@ -1,0 +1,84 @@
+name: Test
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11-alpine
+        env:
+          POSTGRES_PASSWORD: "test"
+          POSTGRES_USER: "test"
+          POSTGRES_DB: "test"
+        ports:
+          - "5433:5432"
+      redis:
+        image: redis
+        ports:
+          - "6379:6379"
+      kafka:
+        image: spotify/kafka
+        env:
+          ADVERTISED_HOST: "localhost"
+          ADVERTISED_PORT: "9092"
+        ports:
+          - "2181:2181"
+          - "9092:9092"
+      mongo:
+        image: mongo
+        env:
+          MONGO_INITDB_ROOT_USERNAME: "test"
+          MONGO_INITDB_ROOT_PASSWORD: "test"
+        ports:
+          - "27017:27017"
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+        env:
+          ACCEPT_EULA: "Y"
+          SA_PASSWORD: "Test1234"
+        ports:
+          - "1433:1433"
+      mysql:
+        image: mysql
+        env:
+          MYSQL_ROOT_PASSWORD: "test"
+          MYSQL_DATABASE: "test"
+        ports:
+          - "3307:3306"
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ACCESS_KEY: minio
+          MINIO_SECRET_KEY: minio123
+        options: --name minio-server
+        ports:
+          - "9001:9000"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run rabbit  # not able to set up rabbit via services because certificates appear only at checkout
+        run: docker-compose up -d rabbit
+      - name: Install msodbcsql17
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          sudo curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list -o /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install msodbcsql17 unixodbc-dev
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "file://`pwd`#egg=catcher_modules[travis]"
+      - name: Test with pytest
+        run: |
+          pytest
