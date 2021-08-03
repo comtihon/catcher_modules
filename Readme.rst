@@ -1,5 +1,5 @@
-.. image:: https://github.com/comtihon/catcher_modules/actions/workflows/test-package.yml/badge.svg?branch=master
-    :target: https://github.com/comtihon/catcher_modules/actions/workflows/test-package.yml
+.. image:: https://github.com/comtihon/catcher_modules/actions/workflows/test.yml/badge.svg?branch=master
+    :target: https://github.com/comtihon/catcher_modules/actions/workflows/test.yml
 .. image:: https://img.shields.io/pypi/v/catcher_modules.svg
     :target: https://pypi.python.org/pypi/catcher_modules
 .. image:: https://img.shields.io/pypi/pyversions/catcher_modules.svg
