@@ -20,7 +20,7 @@ def extras() -> dict:
         'redis': ["redis==3.2.*"],
         'mongodb': ["pymongo==3.8.*"],
         'docker': ["docker==3.7.*"],
-        'elastic': ["elasticsearch==7.0.*"],
+        'elastic': ["elasticsearch==7.13.*"],
         's3': ["boto3==1.9.*"],
         'rabbit': ["pika==0.13.1"],
         'email': ["imbox==0.9.*"],
