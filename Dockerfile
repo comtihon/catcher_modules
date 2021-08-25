@@ -8,8 +8,9 @@ COPY setup.py setup.py
 ## database client libraries
 # client libraries for postgres, mysql, couchbase
 RUN apk update \
-  && apk add wget unzip gcc g++ curl zip bash unixodbc-dev postgresql-dev libcouchbase-dev libffi-dev mariadb-connector-c-dev \
-  && pip install Cython
+  && apk add wget git unzip build-base gcc abuild binutils binutils-doc g++ cmake ninja curl zip bash extra-cmake-modules \
+  unixodbc-dev postgresql-dev libcouchbase-dev libffi-dev mariadb-connector-c-dev \
+  && pip install Cython docutils
 # client library for mssql
 RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.2.2-1_amd64.apk \
     && apk add --allow-untrusted msodbcsql17_17.5.2.2-1_amd64.apk
