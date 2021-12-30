@@ -107,7 +107,8 @@ class Salesforce(ExternalStep):
         return Salesforce(**conf)
 
     def _query(self, sf, query):
-        return sf.query_all(query['soql'])
+        import json
+        return json.loads(json.dumps(sf.query_all(query['soql'])))  # json to avoid OrderedDict
 
     def _record(self, sf, action, params: dict):
         del params['config']
