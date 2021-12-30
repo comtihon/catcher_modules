@@ -6,12 +6,12 @@ import pytest
 from catcher.utils.file_utils import ensure_empty
 from catcher.utils.logger import error
 from cryptography.fernet import Fernet
+from datetime import datetime
+import docker
 
 import test
 from os.path import join, dirname
-
 from catcher.core.runner import Runner
-
 from test.abs_test_class import TestClass
 
 
@@ -30,6 +30,7 @@ class AirflowTest(TestClass):
     def setUp(self):
         super().setUp()
         ensure_empty(join(test.get_test_dir(self.test_name), 'resources'))
+        self.add_dag('airflow_hello_world.py')
 
     def tearDown(self):
         super().tearDown()
@@ -40,12 +41,15 @@ class AirflowTest(TestClass):
                 path_in_dir = join(path, f)
                 if not os.path.isdir(path_in_dir):
                     os.remove(path_in_dir)
+        self.delete_dag(self.dag_id)
+
 
     @pytest.mark.skip(reason="too heavy for travis")
     def test_populate_connections(self):
         """
         Catcher's Airflow step should populate Airflow connections based on it's inventory
         """
+        self.dag_id = 'hello_world'
         self.populate_file('test_inventory.yml', '''
                 postgres_conf_1: 'test:test@localhost:5433/test'
                 postgres_conf_2:
@@ -86,20 +90,19 @@ class AirflowTest(TestClass):
                     type: 'http'
                 ''')
 
-        self.populate_file('main.yaml', '''---
+        self.populate_file('main.yaml', f'''---
                         steps:
                             - airflow:
                                 run:
                                     config:
-                                        db_conf: '{{ postgres_conf_2 }}'
-                                        url: '{{ airflow.url }}'
+                                        db_conf: '{{{{ postgres_conf_2 }}}}'
+                                        url: '{{{{ airflow.url }}}}'
                                         populate_connections: true
                                         fernet_key: zp8kV516l9tKzqq9pJ2Y6cXbM3bgEWIapGwzQs6jio4=
-                                    dag_id: 'hello_world'
+                                    dag_id: '{self.dag_id}'
                                     sync: true
                                     wait_timeout: 50
                         ''')
-        self.add_dag('airflow_hello_world.py')
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), join(self.test_dir, 'test_inventory.yml'))
         self.assertTrue(runner.run_tests())
         self._check_connection('postgres_conf_1', None, None)  # wasn't imported as type is missing
@@ -128,12 +131,56 @@ class AirflowTest(TestClass):
                                                'region_name': None}))
         self._check_connection('airflow', {'host': '127.0.0.1', 'port': 8080}, None)
 
-    def add_dag(self, dag_name: str):
-        copyfile(join(self.global_resource_dir, dag_name), join(dirname(test.__file__), '../dags', dag_name))
-        import docker
+    @pytest.mark.skip(reason="too heavy for travis")
+    def test_trigger_dag_with_dag_config(self):
+        """
+        Catcher's Airflow step should be able to trigger dag with a specific execution date
+        """
+        execution_date = datetime(2020, 3, 18, 0, 59, 59)
+        airflow_url = 'http://127.0.0.1:8080'
+        self.dag_id = 'hello_world'
+
+        self.populate_file('test_inventory_2.yml', f'''
+                postgres_conf_2:
+                    url: 'test:test@localhost:5433/test'
+                    type: postgres
+                airflow:
+                    url: '{airflow_url}'
+                    type: 'http'
+                ''')
+
+        self.populate_file('main_2.yaml', f'''---
+                        steps:
+                            - airflow:
+                                run:
+                                    config:
+                                        db_conf: '{{{{ postgres_conf_2 }}}}'
+                                        url: '{{{{ airflow.url }}}}'
+                                        populate_connections: true
+                                        fernet_key: zp8kV516l9tKzqq9pJ2Y6cXbM3bgEWIapGwzQs6jio4=
+                                    dag_config:
+                                        execution_date: '{str(execution_date)}'
+                                    dag_id: '{self.dag_id}'
+                                    sync: true
+                                    wait_timeout: 50
+                        ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main_2.yaml'), join(self.test_dir, 'test_inventory_2.yml'))
+        self.assertTrue(runner.run_tests())
+
+
+    def delete_dag(self, dag_id):
         client = docker.from_env()
         airflow = client.containers.get('catcher_modules_webserver_1')
-        res = airflow.exec_run(cmd='python -c "from airflow.models import DagBag; d = DagBag();"')
+        res = airflow.exec_run(cmd=f'/entrypoint.sh airflow delete_dag -y {dag_id}')
+        if res.exit_code != 0:
+            error("Can't delete dag {}: {}".format(dag_id, res.output.decode()))
+            raise Exception(f"Can't delete dag {dag_id}")
+
+    def add_dag(self, dag_name: str):
+        copyfile(join(self.global_resource_dir, dag_name), join(dirname(test.__file__), '../dags', dag_name))
+        client = docker.from_env()
+        airflow = client.containers.get('catcher_modules_webserver_1')
+        res = airflow.exec_run(cmd='/entrypoint.sh python -c "from airflow.models import DagBag; d = DagBag();"')
         if res.exit_code != 0:
             error("Can't trigger airflow dagbag refresh: {}".format(res.output.decode()))
             raise Exception("Can't trigger airflow dagbag refresh")
