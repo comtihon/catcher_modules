@@ -107,6 +107,7 @@ class Salesforce(ExternalStep):
         return Salesforce(**conf)
 
     def _query(self, sf, query):
+        del query['config']
         return sf.query_all(query)
 
     def _record(self, sf, action, params: dict):
