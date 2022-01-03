@@ -18,7 +18,7 @@ def extras() -> dict:
         'oracle': ["sqlalchemy==1.4.29", "cx_oracle==8.3.0"],
         'sqlite': ["sqlalchemy==1.4.29"],
         'redis': ["redis==4.1.0"],
-        'mongodb': ["pymongo==4.0.1"],
+        'mongodb': ["pymongo==3.12.3", "sqlalchemy==1.4.29"],
         'docker': ["docker==5.0.3"],
         'elastic': ["elasticsearch==7.16.2"],
         's3': ["boto3==1.20.26"],

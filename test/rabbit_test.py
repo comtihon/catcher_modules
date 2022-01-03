@@ -2,6 +2,9 @@ import json
 from os.path import join
 
 import ssl
+
+import pika
+
 import test
 import numbers
 from catcher.core.runner import Runner
@@ -35,11 +38,10 @@ class RabbitTest(TestClass):
             amqpURL.format('s' if sslOptions else '', config['username'], config['password'], config['server'],
                            config['virtualhost']))
         if sslOptions is not None:
-            parameters.ssl = True
             parameters.ssl_options = self._get_ssl_options(sslOptions)
         return parameters
 
-    def _get_ssl_options(self, sslOptions):
+    def _get_ssl_options(self, ssl_options):
         # PROTOCOL_TLSv1, PROTOCOL_TLSv1_1 or PROTOCOL_TLSv1_2
         sslVersion = {
             'PROTOCOL_TLSv1': ssl.PROTOCOL_TLSv1,
@@ -53,13 +55,14 @@ class RabbitTest(TestClass):
             'CERT_REQUIRED': ssl.CERT_REQUIRED,
         }
 
-        return {
-            'ssl_version': sslVersion.get(sslOptions.get('ssl_version'), ssl.PROTOCOL_TLSv1_2),
-            'ca_certs': sslOptions.get('ca_certs'),
-            'keyfile': sslOptions.get('keyfile'),
-            'certfile': sslOptions.get('certfile'),
-            'cert_reqs': certReqs.get(sslOptions.get('cert_reqs'), 'CERT_NONE')
-        }
+        context = ssl.SSLContext(sslVersion.get(ssl_options.get('ssl_version'), ssl.PROTOCOL_TLSv1_2))
+        context.verify_mode = certReqs.get(ssl_options.get('cert_reqs'), 'CERT_NONE')
+        context.keylog_filename = ssl_options.get('keyfile')
+        if ssl_options.get('ca_certs') is not None:
+            context.load_verify_locations(ssl_options.get('ca_certs'), None, None)
+        if ssl_options.get('certfile') is not None:
+            context.load_cert_chain(ssl_options.get('certfile'))
+        return pika.SSLOptions(context=context)
 
     def setUp(self):
         super().setUp()
@@ -108,7 +111,7 @@ class RabbitTest(TestClass):
             channel = connection.channel()
             method_frame, header_frame, body = channel.basic_get(self.config['queue'])
             if method_frame:
-                self.assertEqual('Catcher test message', body.decode('UTF-8'))
+                self.assertEqual(b'Catcher test message', body)
                 self.assertEqual({'test.header.1': 'header1', 'test.header.2': 'header1'}, header_frame.headers)
                 channel.basic_ack(method_frame.delivery_tag)
 
@@ -144,7 +147,7 @@ class RabbitTest(TestClass):
             channel = connection.channel()
             method_frame, header_frame, body = channel.basic_get(self.config['queue'])
             if method_frame:
-                actual_test_data = json.loads(body.decode('UTF-8'))
+                actual_test_data = json.loads(body)
                 self.assertEqual('catcher', actual_test_data["testtool"])
                 self.assertEqual(10, actual_test_data["rating"])
                 channel.basic_ack(method_frame.delivery_tag)
@@ -188,8 +191,7 @@ class RabbitTest(TestClass):
             channel = connection.channel()
             channel.basic_publish(exchange=self.config['exchange'],
                                   routing_key=self.config['routingKey'],
-                                  properties=None,
-                                  body='Test queue message')
+                                  body=b'Test queue message')
 
         self.populate_file('main.yaml', '''---
             variables:

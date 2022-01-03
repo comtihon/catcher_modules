@@ -153,9 +153,11 @@ class Rabbit(ExternalStep, MqStepMixin):
         with pika.BlockingConnection(connection_parameters) as connection:
             channel = connection.channel()
             method_frame, header_frame, body = channel.basic_get(queue)
+            if isinstance(body, (bytes, bytearray)):
+                body = body.decode('utf-8')
             if method_frame:
                 channel.basic_ack(method_frame.delivery_tag)
-                message = try_get_object(body.decode('UTF-8'))
+                message = try_get_object(body)
         return message
 
     def _get_connection_parameters(self, config):
@@ -166,7 +168,6 @@ class Rabbit(ExternalStep, MqStepMixin):
             amqpURL.format('s' if sslOptions else '', config['username'], config['password'], config['server'],
                            config['virtualhost']))
         if sslOptions is not None:
-            parameters.ssl = True
             parameters.ssl_options = self._get_ssl_options(sslOptions)
         return parameters
 
@@ -184,11 +185,12 @@ class Rabbit(ExternalStep, MqStepMixin):
             'CERT_OPTIONAL': ssl.CERT_OPTIONAL,
             'CERT_REQUIRED': ssl.CERT_REQUIRED,
         }
-
-        return {
-            'ssl_version': sslVersion.get(ssl_options.get('ssl_version'), ssl.PROTOCOL_TLSv1_2),
-            'ca_certs': ssl_options.get('ca_certs'),
-            'keyfile': ssl_options.get('keyfile'),
-            'certfile': ssl_options.get('certfile'),
-            'cert_reqs': certReqs.get(ssl_options.get('cert_reqs'), 'CERT_NONE')
-        }
+        import pika
+        context = ssl.SSLContext(sslVersion.get(ssl_options.get('ssl_version'), ssl.PROTOCOL_TLSv1_2))
+        context.verify_mode = certReqs.get(ssl_options.get('cert_reqs'), 'CERT_NONE')
+        context.keylog_filename = ssl_options.get('keyfile')
+        if ssl_options.get('ca_certs') is not None:
+            context.load_verify_locations(ssl_options.get('ca_certs'), None, None)
+        if ssl_options.get('certfile') is not None:
+            context.load_cert_chain(ssl_options.get('certfile'))
+        return pika.SSLOptions(context=context)
