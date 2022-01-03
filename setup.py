@@ -10,24 +10,24 @@ def get_requirements() -> list:
 
 def extras() -> dict:
     modules = {
-        'kafka': ["pykafka==2.8.*"],
-        'couchbase': ["couchbase==3.2.*"],
-        'postgres': ["sqlalchemy==1.3.*", "psycopg2==2.8.*"],
-        'mssql': ["pyodbc==4.0.*", "sqlalchemy==1.3.*"],
-        'mysql': ["cython==0.29.*", "pymysql==0.9.*", "sqlalchemy==1.3.*"],
-        'oracle': ["sqlalchemy==1.3.*", "cx_oracle==7.1.*"],
-        'sqlite': ["sqlalchemy==1.3.*"],
-        'redis': ["redis==3.2.*"],
-        'mongodb': ["pymongo==3.8.*"],
-        'docker': ["docker==3.7.*"],
-        'elastic': ["elasticsearch==7.13.*"],
-        's3': ["boto3==1.9.*"],
-        'rabbit': ["pika==0.13.1"],
-        'email': ["imbox==0.9.*"],
-        'marketo': ["marketorestpython==0.5.*"],
-        'airflow': ["cryptography==2.8.*"],
-        'selenium': ["selenium==3.141.*"],
-        'salesforce': ["simple-salesforce==1.11.*"]
+        'kafka': ["pykafka==2.8.0"],
+        'couchbase': ["couchbase==3.2.4"],
+        'postgres': ["sqlalchemy==1.4.29", "psycopg2==2.9.3"],
+        'mssql': ["pyodbc==4.0.32", "sqlalchemy==1.4.29"],
+        'mysql': ["cython==0.29.26", "pymysql==1.0.2", "sqlalchemy==1.4.29"],
+        'oracle': ["sqlalchemy==1.4.29", "cx_oracle==8.3.0"],
+        'sqlite': ["sqlalchemy==1.4.29"],
+        'redis': ["redis==4.1.0"],
+        'mongodb': ["pymongo==4.0.1"],
+        'docker': ["docker==5.0.3"],
+        'elastic': ["elasticsearch==7.16.2"],
+        's3': ["boto3==1.20.26"],
+        'rabbit': ["pika==1.2.0"],
+        'email': ["imbox==0.9.8"],
+        'marketo': ["marketorestpython==0.5.14"],
+        'airflow': ["cryptography==36.0.1"],
+        'selenium': ["selenium==4.1.0"],
+        'salesforce': ["simple-salesforce==1.11.4"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
     # don't try to install couchbase in travis

@@ -1,2 +1,2 @@
-catcher>=1.19.5
-arrow>=0.15.*
+catcher>=1.35.3
+arrow==1.2.1
