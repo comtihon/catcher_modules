@@ -17,8 +17,8 @@ RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac
 
 ## languages for external step support
 # install java
-RUN apk --no-cache add openjdk8
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+RUN apk --no-cache add openjdk11
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH="$JAVA_HOME/bin:${PATH}"
 # install kotlin
 RUN curl -s https://get.sdkman.io | bash
