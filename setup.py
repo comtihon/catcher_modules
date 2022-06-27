@@ -11,7 +11,7 @@ def get_requirements() -> list:
 def extras() -> dict:
     modules = {
         'kafka': ["pykafka==2.8.0"],
-        'couchbase': ["couchbase==3.2.4"],
+        'couchbase': ["couchbase==4.0.1"],
         'postgres': ["sqlalchemy==1.4.29", "psycopg2==2.9.3"],
         'mssql': ["pyodbc==4.0.32", "sqlalchemy==1.4.29"],
         'mysql': ["cython==0.29.26", "pymysql==1.0.2", "sqlalchemy==1.4.29"],
