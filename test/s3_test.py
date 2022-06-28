@@ -3,6 +3,7 @@ from os.path import join
 import boto3
 from catcher.core.runner import Runner
 from catcher.utils.file_utils import ensure_empty
+from catcher.utils.logger import get_logger
 
 import test
 from test.abs_test_class import TestClass
@@ -244,7 +245,8 @@ class S3Test(TestClass):
         runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
         self.assertTrue(runner.run_tests())
         try:
-            self.s3.get_object(Bucket='foo', Key='baz/bar/dir/')
+            obj = self.s3.get_object(Bucket='foo', Key='baz/bar/dir/')
+            get_logger().info(obj)
             self.fail('Key must not exist')
         except Exception as e:
             self.assertTrue('NoSuchKey' in str(e))
