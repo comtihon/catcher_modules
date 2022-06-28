@@ -49,14 +49,6 @@ jobs:
           MYSQL_DATABASE: "test"
         ports:
           - "3307:3306"
-      minio:
-        image: minio/minio:latest
-        env:
-          MINIO_ROOT_USER: minio
-          MINIO_ROOT_PASSWORD: minio123
-        options: -v ${{ github.workspace }}/s3_data:/data:rw --entrypoint "minio server /data" ...
-        ports:
-          - "9001:9000"
     strategy:
       fail-fast: false
       matrix:
@@ -65,6 +57,14 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run rabbit  # not able to set up rabbit via services because certificates appear only at checkout
         run: docker-compose up -d rabbit
+      - name: Setup minio # not able to run vanilla minio in services due to the entrypoint and /data mount
+        run: |
+          docker run -d -p 9000:9000 --name minio \
+                     -e "MINIO_ROOT_USER=minio" \
+                     -e "MINIO_ROOT_PASSWORD=minio123" \
+                     -v /tmp/data:/data \
+                     -v /tmp/config:/root/.minio \
+                     minio/minio server /data
       - name: Install msodbcsql17
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
