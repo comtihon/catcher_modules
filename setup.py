@@ -21,7 +21,7 @@ def extras() -> dict:
         'mongodb': ["pymongo==3.12.3", "sqlalchemy==1.4.29"],
         'docker': ["docker==5.0.3"],
         'elastic': ["elasticsearch==7.16.2"],
-        's3': ["boto3==1.20.26"],
+        's3': ["boto3==1.24.18"],
         'rabbit': ["pika==1.2.0"],
         'email': ["imbox==0.9.8"],
         'marketo': ["marketorestpython==0.5.14"],
@@ -30,8 +30,6 @@ def extras() -> dict:
         'salesforce': ["simple-salesforce==1.11.4"]
     }
     modules['all'] = list(set([item for sublist in modules.values() for item in sublist]))
-    # don't try to install couchbase in travis
-    modules['travis'] = [m for m in modules['all'] if not m.startswith('couchbase')]
     return modules
 
 
