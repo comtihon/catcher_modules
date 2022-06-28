@@ -54,7 +54,7 @@ jobs:
         env:
           MINIO_ROOT_USER: minio
           MINIO_ROOT_PASSWORD: minio123
-        options: server /data
+        options: -v ${{ github.workspace }}/s3_data:/data:rw --entrypoint "minio server /data" ...
         ports:
           - "9001:9000"
     strategy:
