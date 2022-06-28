@@ -50,11 +50,11 @@ jobs:
         ports:
           - "3307:3306"
       minio:
-        image: bitnami/minio:latest
+        image: minio/minio:latest
         env:
-          MINIO_ACCESS_KEY: minio
-          MINIO_SECRET_KEY: minio123
-        options: --name minio-server
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
+        options: -v ${{ github.workspace }}/build:/data server /data
         ports:
           - "9001:9000"
     strategy:
