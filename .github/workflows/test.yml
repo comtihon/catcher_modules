@@ -54,7 +54,7 @@ jobs:
         env:
           MINIO_ROOT_USER: minio
           MINIO_ROOT_PASSWORD: minio123
-        options: -v ${{ github.workspace }}/build:/data server /data
+        options: server /data
         ports:
           - "9001:9000"
     strategy:

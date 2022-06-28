@@ -76,10 +76,10 @@ services:
     image: rabbitmq:3.7.18-management
     hostname: catcher-rabbit
     ports:
-        - 5672:5672
-        - 5671:5671
-        - 15672:15672
-        - 15671:15671
+        - "5672:5672"
+        - "5671:5671"
+        - "15672:15672"
+        - "15671:15671"
     volumes:
         - ./test/rabbit-config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
         - ./test/rabbit-config/ca_certificate.pem:/etc/rabbitmq/certs/ca_certificate.pem
