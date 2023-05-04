@@ -8,7 +8,7 @@ COPY setup.py setup.py
 ## database client libraries
 # client libraries for postgres, mysql, couchbase
 RUN apk update \
-  && apk add wget git unzip build-base gcc abuild binutils binutils-doc g++ cmake ninja curl zip bash extra-cmake-modules \
+  && apk add --no-cache wget git unzip build-base gcc abuild binutils binutils-doc g++ cmake ninja curl zip bash extra-cmake-modules \
   unixodbc-dev postgresql-dev libcouchbase-dev libffi-dev mariadb-connector-c-dev \
   && pip install Cython docutils
 # client library for mssql
@@ -17,31 +17,26 @@ RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac
 
 ## languages for external step support
 # install java
-RUN apk --no-cache add openjdk11
+# install java, kotlin, node js
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH="$JAVA_HOME/bin:${PATH}"
-# install kotlin
-RUN curl -s https://get.sdkman.io | bash
-RUN bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install kotlin'
 ENV PATH="/root/.sdkman/candidates/kotlin/current/bin:${PATH}"
-# install node js
-RUN apk add --update nodejs npm
+RUN apk --no-cache add openjdk11 nodejs npm \
+  && curl -s https://get.sdkman.io | bash \
+  && bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install kotlin'
 
 ## browsers
 RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-2.30-r0.apk \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-bin-2.30-r0.apk
-RUN apk add glibc-2.30-r0.apk glibc-bin-2.30-r0.apk
-RUN apk add firefox-esr chromium
+ && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk \
+ && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-bin-2.34-r0.apk
+RUN apk add glibc-2.34-r0.apk glibc-bin-2.34-r0.apk
+RUN apk add firefox-esr chromium chromium-chromedriver
 
-## selenium drivers (firefox, chrome, opera)
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz \
-  && mkdir -p /usr/lib/selenium && tar -xf geckodriver-v0.26.0-linux64.tar.gz -C /usr/bin/ \
+## selenium drivers (firefox, opera)
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz \
+  && mkdir -p /usr/lib/selenium && tar -xf geckodriver-v0.30.0-linux64.tar.gz -C /usr/bin/ \
   && chmod +x /usr/bin/geckodriver
-RUN wget https://chromedriver.storage.googleapis.com/84.0.4147.30/chromedriver_linux64.zip \
-  && unzip chromedriver_linux64.zip -d /usr/bin/ \
-  && chmod +x /usr/bin/chromedriver
-RUN wget https://github.com/operasoftware/operachromiumdriver/releases/download/v.83.0.4103.97/operadriver_linux64.zip \
+RUN wget https://github.com/operasoftware/operachromiumdriver/releases/download/v.102.0.5005.61/operadriver_linux64.zip \
   && unzip operadriver_linux64.zip -d /usr/bin/ \
   && chmod +x /usr/bin/operadriver_linux64
 
