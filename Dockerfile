@@ -26,10 +26,6 @@ RUN apk --no-cache add openjdk11 nodejs npm \
   && bash -c 'source "/root/.sdkman/bin/sdkman-init.sh" && sdk install kotlin'
 
 ## browsers
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk \
- && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-bin-2.34-r0.apk
-RUN apk add glibc-2.34-r0.apk glibc-bin-2.34-r0.apk
 RUN apk add firefox-esr chromium chromium-chromedriver
 
 ## selenium drivers (firefox, opera)

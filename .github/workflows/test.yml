@@ -65,12 +65,10 @@ jobs:
                      -v /tmp/data:/data \
                      -v /tmp/config:/root/.minio \
                      minio/minio server /data
-      - name: Install msodbcsql17
+      - name: Install unixodbc
         run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-          sudo curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list -o /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install msodbcsql17 unixodbc-dev
+          sudo ACCEPT_EULA=Y apt-get install unixodbc-dev
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:

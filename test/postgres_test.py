@@ -219,3 +219,75 @@ class PostgresTest(TestClass):
         self.assertTrue(runner.run_tests())
         response = self.get_values('foo')
         self.assertEqual([(1, 'test1@test.org'), (2, 'test2@test.org')], response)
+
+    def test_uuid(self):
+        # write uuid
+        self.populate_file('resources/schema.sql', '''
+                                                CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+                                                CREATE TABLE if not exists foo (
+                                                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                                                    email TEXT
+                                                );
+                                                {%- for user in users %}
+                                                insert into foo values ('{{random("uuid4")}}', '{{user.email}}');
+                                                {%- endfor -%}
+                                                ''')
+        self.populate_file('main.yaml', '''---
+                                            variables:
+                                                users:
+                                                    - email: test1@test.org
+                                                    - email: test2@test.org
+                                            steps:
+                                                - postgres:
+                                                    request:
+                                                        conf: 'test:test@localhost:5433/test'
+                                                        sql: schema.sql
+                                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main.yaml'), None)
+        self.assertTrue(runner.run_tests())
+        connection = self.connection
+        cursor = connection.cursor()
+        # Execute the SQL query to fetch id and email from the foo table
+        try:
+            cursor.execute("SELECT id, email FROM foo where email='test1@test.org'")
+
+            row = cursor.fetchone()
+            self.assertIsNotNone(row)
+            uuid = row[0]
+        finally:
+            cursor.close()
+            connection.close()
+
+        # read uuid
+        userid = '{{ user.id }}'
+        documentid = '{{ document.id }}'
+        useremail = '{{ user.email }}'
+        documentemail = '{{ document.email }}'
+        output = '{{ OUTPUT }}'
+        self.populate_file('main2.yaml', f'''---
+                                            variables:
+                                                user:
+                                                    id: {uuid}
+                                                    email: test1@test.org
+                                            steps:
+                                                - postgres:
+                                                    request:
+                                                        conf: 'test:test@localhost:5433/test'
+                                                        sql: "select * from foo where id='{userid}'"
+                                                    register: 
+                                                        document: '{output}'
+                                                - check:
+                                                    equals:
+                                                        the: '{userid}'
+                                                        is: '{documentid}'
+                                                - check:
+                                                    equals:
+                                                        the: '{uuid}'
+                                                        is: '{documentid}'
+                                                - check:
+                                                    equals:
+                                                        the: '{useremail}'
+                                                        is: '{documentemail}'
+                                            ''')
+        runner = Runner(self.test_dir, join(self.test_dir, 'main2.yaml'), None, output_format='other')
+        self.assertTrue(runner.run_tests())
