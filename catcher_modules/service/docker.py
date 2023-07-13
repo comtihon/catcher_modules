@@ -28,6 +28,32 @@ class NetworkBasedCmd(metaclass=ABCMeta):
         return filtered[0].id
 
 
+class DeviceBasedCmd(metaclass=ABCMeta):
+    def __init__(self, device_requests=None, **kwargs) -> None:
+        super().__init__()
+        self._device_requests = device_requests
+
+    def get_device_requests(self):
+        if self._device_requests is None: return []
+        reqs = []
+        for req in self._device_requests:
+            reqs.append(self._get_device_request(driver=req.get('driver'),
+                                                count=req.get('count'),
+                                                device_ids=req.get('device_ids'),
+                                                capabilities=req.get('capabilities'),
+                                                options=req.get('options')))
+        return reqs
+
+    @staticmethod
+    def _get_device_request(driver=None, count=None, device_ids=None, capabilities=None, options=None):
+        import docker
+        return docker.types.DeviceRequest(driver=driver,
+                                        count=count,
+                                        device_ids=device_ids,
+                                        capabilities=capabilities,
+                                        options=options)
+
+
 class IdBasedCmd:
     def __init__(self, **kwargs: dict) -> None:
         self._id = kwargs.get('name', kwargs.get('hash'))
@@ -97,7 +123,7 @@ class LogsCmd(IdBasedCmd, DockerCmd):
         return self.get_container().logs().decode()
 
 
-class StartCmd(NetworkBasedCmd, DockerCmd):
+class StartCmd(NetworkBasedCmd, DeviceBasedCmd, DockerCmd):
     def __init__(self, image: str, **kwargs: dict) -> None:
         super().__init__(**kwargs)
         self._image = image
@@ -107,6 +133,8 @@ class StartCmd(NetworkBasedCmd, DockerCmd):
         self._ports = kwargs.get('ports')
         self._env = kwargs.get('environment')
         self._volumes = kwargs.get('volumes', {})
+        self._extra_hosts = kwargs.get('extra_hosts', {})
+        self._device_requests = kwargs.get('device_requests', [])
 
     def action(self, variables):
         import docker
@@ -119,7 +147,9 @@ class StartCmd(NetworkBasedCmd, DockerCmd):
                                        network=self.network(variables),
                                        ports=self._ports,
                                        environment=self._env,
-                                       volumes=volumes)
+                                       volumes=volumes,
+                                       extra_hosts=self._extra_hosts,
+                                       device_requests=self.get_device_requests())
         if not self._detached:
             return output.decode()
         else:
@@ -185,6 +215,8 @@ class Docker(ExternalStep):
     - environment: a dictionary of environment variables
     - volumes: a dictionary of volumes
     - network: network name. *Optional* (default is current test's name)
+    - extra_hosts: a dictionary of extra hosts (see Docker docs)
+    - device_requests: a list of dictionaries. Keys and values like in docker.types.DeviceRequest args
 
     :stop: stop a container.
 
@@ -249,7 +281,7 @@ class Docker(ExternalStep):
             - check:
                 equals: {the: '{{ echo }}', is: 'hello world'}
 
-    Start named container detached with volumes and environment.
+    Start named container detached with volumes, environment, extra host and GPUs.
     ::
 
         - docker:
@@ -264,6 +296,8 @@ class Docker(ExternalStep):
                 volumes:
                     '{{ CURRENT_DIR }}/data': '/data'
                     '/tmp/logs': '/var/log/service'
+                extra_hosts: { host1: '{{ HOST1_IP }}' }
+                device_requests: [ { count: -1, capabilities: '[["gpu"]]' } ]
 
     Exec command on running container.
     ::
