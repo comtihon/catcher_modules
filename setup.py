@@ -8,6 +8,11 @@ def get_requirements() -> list:
         return f.readlines()
 
 
+def load_readme() -> str:
+    with open('Readme.rst', 'r') as f:
+        return f.read()
+
+
 def extras() -> dict:
     modules = {
         'kafka': ["pykafka==2.8.0"],
@@ -40,6 +45,8 @@ setup(name=catcher_modules.APPNAME,
       description='Additional modules for catcher.',
       author=catcher_modules.APPAUTHOR,
       author_email='valerii.tikhonov@gmail.com',
+      long_description=load_readme(),
+      long_description_content_type='text/x-rst',
       url='https://github.com/comtihon/catcher_modules',
       packages=find_packages(),
       install_requires=get_requirements(),
