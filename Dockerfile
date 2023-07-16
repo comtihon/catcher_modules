@@ -3,6 +3,7 @@ FROM comtihon/catcher_base:latest
 WORKDIR /catcher_modules
 COPY catcher_modules catcher_modules
 COPY requirements.txt requirements.txt
+COPY Readme.rst Readme.rst
 COPY setup.py setup.py
 
 ## database client libraries
