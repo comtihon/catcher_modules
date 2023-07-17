@@ -25,7 +25,7 @@ Usage
 You can either write your own module in python or as external shell script. Both ways are covered
 in Catcher documentation for `external`_ modules.
 
-Read the `docs`_ for existing modules usage info: :meth:`catcher_modules`
+Read the `docs`_ for existing modules usage info: `catcher_modules <./docs/source/catcher_modules.rst>`_
 
 .. _docs: https://catcher-modules.readthedocs.io/en/latest/
 
